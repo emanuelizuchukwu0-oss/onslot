@@ -86,12 +86,12 @@
         .admin-content { display: block; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .pending-orders-list, .daily-rewards-list, .pending-wins-list { max-height: 500px; overflow-y: auto; }
-        .pending-order, .daily-reward-item, .pending-win-item { background: rgba(30,41,59,0.6); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
-        .order-details, .reward-details, .win-details { flex: 2; }
-        .order-details p, .reward-details p, .win-details p { margin: 4px 0; font-size: 0.85rem; }
-        .order-details strong, .reward-details strong, .win-details strong { color: #f59e0b; }
-        .order-actions, .reward-actions, .win-actions { display: flex; gap: 8px; }
+        .pending-orders-list, .pending-wins-list { max-height: 500px; overflow-y: auto; }
+        .pending-order, .pending-win-item { background: rgba(30,41,59,0.6); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+        .order-details, .win-details { flex: 2; }
+        .order-details p, .win-details p { margin: 4px 0; font-size: 0.85rem; }
+        .order-details strong, .win-details strong { color: #f59e0b; }
+        .order-actions, .win-actions { display: flex; gap: 8px; }
         .success-btn { background: linear-gradient(135deg, #10b981, #059669); border: none; padding: 8px 16px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; }
         .decline-btn { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); padding: 8px 16px; border-radius: 40px; color: #ef4444; cursor: pointer; }
         .copy-phone-btn { background: rgba(245,158,11,0.2); border: none; padding: 5px 10px; border-radius: 20px; color: #f59e0b; cursor: pointer; font-size: 0.7rem; margin-left: 10px; }
@@ -120,14 +120,6 @@
         .bank-details { background: rgba(30,41,59,0.6); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: left; }
         .bank-details p { margin-bottom: 8px; color: white; }
         .copy-btn { background: rgba(245,158,11,0.2); border: none; padding: 8px 16px; border-radius: 40px; color: #f59e0b; cursor: pointer; margin-top: 10px; width: 100%; }
-        .network-select { margin: 15px 0; text-align: left; }
-        .network-select label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 0.8rem; }
-        .network-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-        .network-option { flex: 1; padding: 12px; border-radius: 40px; background: rgba(30,41,59,0.6); border: 2px solid rgba(255,255,255,0.08); text-align: center; cursor: pointer; transition: all 0.2s; }
-        .network-option:hover { background: rgba(30,41,59,0.8); }
-        .network-option.selected { border-color: #f59e0b; background: rgba(245,158,11,0.15); }
-        .network-option i { font-size: 20px; margin-bottom: 5px; display: block; }
-        .network-option span { font-size: 0.8rem; }
         .success-overlay {
             position: fixed;
             top: 0;
@@ -161,7 +153,7 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
-        @media (max-width: 768px) { .hero-title { font-size: 2rem; } .game-card-header { flex-direction: column; text-align: center; gap: 10px; } .network-buttons { flex-direction: column; } .success-card { padding: 30px 20px; } }
+        @media (max-width: 768px) { .hero-title { font-size: 2rem; } .game-card-header { flex-direction: column; text-align: center; gap: 10px; } .success-card { padding: 30px 20px; } }
     </style>
 </head>
 <body>
@@ -176,7 +168,7 @@
     <div id="dashboardContent" class="dashboard-content">
         <section class="hero"><div class="hero-content"><div class="hero-badge"><span class="badge-pulse"></span>Play & Earn</div><h1 class="hero-title">Win Data<br><span class="gradient-text">By Playing Games!</span></h1><p class="hero-subtitle">Choose your game entry fee and win data bundles!</p></div></section>
         <div class="container">
-            <div class="free-data-banner" id="freeDataBanner"><h4><i class="fas fa-gift"></i> 🎉 FIRST 7 USERS GET ₦100 FREE CREDIT! 🎉</h4><p>First <span id="spotsLeft">7</span> people to sign up get ₦100 credit to play games!</p></div>
+            <div class="free-data-banner" id="freeDataBanner"><h4><i class="fas fa-gift"></i> 🎉 FIRST 5 USERS GET ₦100 FREE CREDIT! 🎉</h4><p>First <span id="spotsLeft">5</span> people to sign up get ₦100 credit to play games!</p></div>
             <div class="game-options">
                 <div class="game-card" onclick="selectGame('200', '500MB', 200)"><div class="game-card-header"><div class="game-card-info"><h3>✈️ JET RACER</h3><p>Tap to jump | Move side to side</p></div><div><div class="game-price">₦200</div><div class="game-reward">🏆 Win: 500MB</div></div></div></div>
                 <div class="game-card" onclick="selectGame('400', '1GB', 400)"><div class="game-card-header"><div class="game-card-info"><h3>✈️ JET RACER</h3><p>Tap to jump | Move side to side</p></div><div><div class="game-price">₦400</div><div class="game-reward">🏆 Win: 1GB</div></div></div></div>
@@ -184,13 +176,11 @@
             </div>
             <div class="referral-section"><div class="referral-header"><i class="fas fa-users"></i><h3>Refer & Earn 500MB</h3></div><div class="referral-code-box"><span class="referral-code" id="userReferralCode">Loading...</span><button class="copy-referral-btn" onclick="copyReferralCode()">Copy Code</button></div><div class="share-buttons"><button class="share-btn whatsapp" onclick="shareOnWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="share-btn facebook" onclick="shareOnFacebook()"><i class="fab fa-facebook"></i> Facebook</button><button class="share-btn twitter" onclick="shareOnTwitter()"><i class="fab fa-twitter"></i> Twitter</button><button class="share-btn telegram" onclick="shareOnTelegram()"><i class="fab fa-telegram"></i> Telegram</button></div><div class="referral-stats"><div class="referral-stat"><div class="label">Referrals Made</div><div class="value" id="referralCount">0</div></div><div class="referral-stat"><div class="label">Next Reward</div><div class="value" id="referralsNeeded">5 referrals = 500MB</div></div></div></div>
         </div>
-        <div class="admin-panel" id="adminPanel" style="display: none;"><div class="admin-header" onclick="toggleAdminPanel()"><h3><i class="fas fa-clock"></i> Admin Dashboard <span class="order-count-badge" id="totalPendingBadge">0</span></h3><i class="fas fa-chevron-down" id="adminChevron"></i></div><div class="admin-content" id="adminContent"><div class="admin-tabs"><div class="admin-tab active" data-tab="payments">💳 Payments (<span id="paymentTabCount">0</span>)</div><div class="admin-tab" data-tab="rewards">🎁 Daily Rewards (<span id="rewardTabCount">0</span>)</div><div class="admin-tab" data-tab="wins">🏆 Game Wins (<span id="winTabCount">0</span>)</div></div><div id="paymentsTab" class="tab-content active"><div class="pending-orders-list" id="pendingOrdersList"><div class="empty-orders">No pending payments</div></div></div><div id="rewardsTab" class="tab-content"><div class="daily-rewards-list" id="dailyRewardsList"><div class="empty-orders">No pending daily rewards</div></div></div><div id="winsTab" class="tab-content"><div class="pending-wins-list" id="pendingWinsList"><div class="empty-orders">No pending game wins</div></div></div></div></div>
+        <div class="admin-panel" id="adminPanel" style="display: none;"><div class="admin-header" onclick="toggleAdminPanel()"><h3><i class="fas fa-clock"></i> Admin Dashboard <span class="order-count-badge" id="totalPendingBadge">0</span></h3><i class="fas fa-chevron-down" id="adminChevron"></i></div><div class="admin-content" id="adminContent"><div class="admin-tabs"><div class="admin-tab active" data-tab="payments">💳 Payments (<span id="paymentTabCount">0</span>)</div><div class="admin-tab" data-tab="wins">🏆 Game Wins (<span id="winTabCount">0</span>)</div></div><div id="paymentsTab" class="tab-content active"><div class="pending-orders-list" id="pendingOrdersList"><div class="empty-orders">No pending payments</div></div></div><div id="winsTab" class="tab-content"><div class="pending-wins-list" id="pendingWinsList"><div class="empty-orders">No pending game wins</div></div></div></div></div>
     </div>
 
     <!-- Modals -->
     <div class="modal" id="paymentModal"><div class="modal-content"><button class="modal-close" onclick="closePaymentModal()"><i class="fas fa-times"></i></button><div class="modal-icon"><i class="fas fa-money-bill-wave"></i></div><h3>Pay to Play</h3><p>Send <strong>₦<span id="payAmount">0</span></strong> to this account</p><div class="bank-details"><p><strong>Bank:</strong> Moniepoint MFB</p><p><strong>Account Name:</strong> Sunday Ijeoma Anastasia</p><p><strong>Account Number:</strong> 9066051034</p><button class="copy-btn" onclick="copyAccount()">📋 Copy Account Number</button></div><div class="payment-methods"><div class="payment-method" data-method="bank_transfer" onclick="selectPaymentMethod('bank_transfer')"><i class="fas fa-exchange-alt"></i><span>Bank Transfer</span></div><div class="payment-method" data-method="ussd" onclick="selectPaymentMethod('ussd')"><i class="fas fa-mobile-alt"></i><span>USSD Transfer</span></div><div class="payment-method" data-method="pos" onclick="selectPaymentMethod('pos')"><i class="fas fa-credit-card"></i><span>Local POS</span></div><div class="payment-method" data-method="card" onclick="selectPaymentMethod('card')"><i class="fas fa-credit-card"></i><span>Card Payment</span></div></div><input type="text" id="transactionRef" class="confirm-input" placeholder="Transaction reference / Receipt code"><button class="confirm-btn" onclick="submitPayment()"><i class="fas fa-check-circle"></i> I Have Paid - Submit</button></div></div>
-    
-    <div class="modal" id="rewardModal"><div class="modal-content"><button class="modal-close" onclick="closeRewardModal()"><i class="fas fa-times"></i></button><div class="modal-icon" style="color:#10b981;"><i class="fas fa-gift"></i></div><h3>🎉 Daily Reward! 🎉</h3><p>You have <strong>₦50 airtime</strong> waiting for you!</p><div class="network-select"><label>Select Your Network:</label><div class="network-buttons"><div class="network-option" onclick="selectDailyRewardNetwork('mtn')"><i class="fas fa-tower-cell"></i><span>MTN</span></div><div class="network-option" onclick="selectDailyRewardNetwork('airtel')"><i class="fas fa-broadcast-tower"></i><span>Airtel</span></div><div class="network-option" onclick="selectDailyRewardNetwork('glo')"><i class="fas fa-globe"></i><span>Glo</span></div><div class="network-option" onclick="selectDailyRewardNetwork('9mobile')"><i class="fas fa-mobile-alt"></i><span>9mobile</span></div></div></div><input type="tel" id="rewardPhone" class="confirm-input" placeholder="Enter phone number for airtime" maxlength="11"><button class="confirm-btn" onclick="claimDailyReward()" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><i class="fas fa-download"></i> Claim ₦50 Airtime</button></div></div>
     
     <div class="modal" id="gameAccessModal"><div class="modal-content"><button class="modal-close" onclick="closeGameAccessModal()"><i class="fas fa-times"></i></button><div class="modal-icon" style="color:#10b981;"><i class="fas fa-check-circle"></i></div><h3>Payment Verified!</h3><p>Click below to play and win <strong id="winReward">500MB</strong>!</p><button class="confirm-btn" onclick="playGame()" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><i class="fas fa-gamepad"></i> Play Game Now</button></div></div>
     
@@ -203,20 +193,15 @@
         // ============================================
         // BACKEND API CONFIGURATION
         // ============================================
-        // CHANGE THIS TO YOUR RENDER BACKEND URL!!!
-      const API_URL = 'https://onslot.onrender.com/api';
-        
-        // For local testing, use: const API_URL = 'http://localhost:5000/api';
+        const API_URL = 'https://onslot.onrender.com/api';
         
         let currentUser = null;
         let selectedGame = null;
         let selectedPaymentMethod = "bank_transfer";
         let pendingPayments = [];
-        let dailyRewards = [];
         let pendingWins = [];
-        let selectedDailyRewardNetwork = "";
         let gameTokens = [];
-       const WEBSITE_URL = "https://onslot-frontend.onrender.com";
+        const WEBSITE_URL = "https://onslot-frontend.onrender.com";
         
         // ============================================
         // API CALL FUNCTIONS
@@ -286,7 +271,6 @@
                 sessionStorage.setItem('userEmail', currentUser.email);
                 showToast("Login successful!", "success");
                 loadDashboard();
-                checkDailyReward();
                 updateFreeCreditBanner();
             } else {
                 showToast(result?.error || "Invalid email or password", "error");
@@ -303,50 +287,50 @@
             showLogin();
         }
         
-async function loadDashboard() {
-    const savedEmail = sessionStorage.getItem('userEmail');
-    if (savedEmail) {
-        const userData = await callAPI(`/user/${encodeURIComponent(savedEmail)}`);
-        if (userData && userData.email) {
-            currentUser = userData;
-            document.getElementById("authSection").style.display = "none";
-            document.getElementById("dashboardContent").style.display = "block";
-            document.getElementById("userInfo").style.display = "flex";
-            document.getElementById("userNameDisplay").innerHTML = `<i class="fas fa-user-circle"></i> ${currentUser.name} (${currentUser.email})`;
-            document.getElementById("userReferralCode").textContent = currentUser.referral_code;
-            document.getElementById("referralCount").textContent = currentUser.referral_count || 0;
-            document.getElementById("referralsNeeded").innerHTML = `${5 - (currentUser.referral_count || 0)} referrals left = 500MB`;
-            
-            const adminFlag = document.getElementById("adminFlagBtn");
-            adminFlag.onclick = function() {
-                const pwd = prompt("Enter admin code:");
-                if (pwd === "000") {
-                    document.getElementById("adminPanel").style.display = "block";
+        async function loadDashboard() {
+            const savedEmail = sessionStorage.getItem('userEmail');
+            if (savedEmail) {
+                const userData = await callAPI(`/user/${encodeURIComponent(savedEmail)}`);
+                if (userData && userData.email) {
+                    currentUser = userData;
+                    document.getElementById("authSection").style.display = "none";
+                    document.getElementById("dashboardContent").style.display = "block";
+                    document.getElementById("userInfo").style.display = "flex";
+                    document.getElementById("userNameDisplay").innerHTML = `<i class="fas fa-user-circle"></i> ${currentUser.name} (${currentUser.email})`;
+                    document.getElementById("userReferralCode").textContent = currentUser.referral_code;
+                    document.getElementById("referralCount").textContent = currentUser.referral_count || 0;
+                    document.getElementById("referralsNeeded").innerHTML = `${5 - (currentUser.referral_count || 0)} referrals left = 500MB`;
+                    
+                    const adminFlag = document.getElementById("adminFlagBtn");
+                    adminFlag.onclick = function() {
+                        const pwd = prompt("Enter admin code:");
+                        if (pwd === "000") {
+                            document.getElementById("adminPanel").style.display = "block";
+                            loadAdminData();
+                        } else {
+                            showToast("Wrong admin code!", "error");
+                        }
+                    };
+                    
                     loadAdminData();
-                } else {
-                    showToast("Wrong admin code!", "error");
+                    updateFreeCreditBanner();
+                    
+                    // CHECK FOR GAME TOKEN AFTER PAYMENT APPROVAL
+                    await checkForGameToken();
+                    
+                    setInterval(loadAdminData, 5000);
+                    
+                    document.querySelectorAll(".admin-tab").forEach(tab => {
+                        tab.onclick = () => {
+                            document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+                            tab.classList.add("active");
+                            document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+                            document.getElementById(`${tab.dataset.tab}Tab`).classList.add("active");
+                        };
+                    });
                 }
-            };
-            
-            loadAdminData();
-            updateFreeCreditBanner();
-            
-            // ✅ CHECK FOR GAME TOKEN AFTER PAYMENT APPROVAL
-            await checkForGameToken();
-            
-            setInterval(loadAdminData, 5000);
-            
-            document.querySelectorAll(".admin-tab").forEach(tab => {
-                tab.onclick = () => {
-                    document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
-                    tab.classList.add("active");
-                    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-                    document.getElementById(`${tab.dataset.tab}Tab`).classList.add("active");
-                };
-            });
+            }
         }
-    }
-}
         
         // ============================================
         // ADMIN FUNCTIONS
@@ -354,7 +338,6 @@ async function loadDashboard() {
         
         async function loadAdminData() {
             await loadPendingPayments();
-            await loadPendingDailyRewards();
             await loadPendingWins();
             updateAdminBadge();
         }
@@ -372,14 +355,6 @@ async function loadDashboard() {
             if (result) {
                 pendingWins = result;
                 renderPendingWins();
-            }
-        }
-        
-        async function loadPendingDailyRewards() {
-            const result = await callAPI('/admin/pending-daily-rewards');
-            if (result) {
-                dailyRewards = result;
-                renderDailyRewards();
             }
         }
         
@@ -405,32 +380,6 @@ async function loadDashboard() {
                     <div class="order-actions">
                         <button class="success-btn" onclick="approvePayment(${payment.id})"><i class="fas fa-check"></i> Success</button>
                         <button class="decline-btn" onclick="declinePayment(${payment.id})"><i class="fas fa-times"></i> Decline</button>
-                    </div>
-                </div>
-            `).join("");
-        }
-        
-        function renderDailyRewards() {
-            const container = document.getElementById("dailyRewardsList");
-            if (!container) return;
-            const pending = dailyRewards.filter(r => r.status === "pending");
-            if (pending.length === 0) {
-                container.innerHTML = '<div class="empty-orders">No pending daily rewards</div>';
-                return;
-            }
-            container.innerHTML = pending.map((reward, idx) => `
-                <div class="daily-reward-item">
-                    <div class="reward-details">
-                        <p><strong>👤 ${reward.user_name}</strong></p>
-                        <p>📧 Email: ${reward.user_email}</p>
-                        <p>📱 Phone: ${reward.phone} <button class="copy-phone-btn" onclick="copyToClipboard('${reward.phone}')">Copy</button></p>
-                        <p>📡 Network: ${reward.network ? reward.network.toUpperCase() : "N/A"}</p>
-                        <p>💰 ₦${reward.amount} Airtime Request</p>
-                        <p>⏰ ${reward.timestamp}</p>
-                    </div>
-                    <div class="reward-actions">
-                        <button class="success-btn" onclick="approveDailyReward(${reward.id})"><i class="fas fa-check"></i> Airtime Sent</button>
-                        <button class="decline-btn" onclick="declineDailyReward(${reward.id})"><i class="fas fa-times"></i> Decline</button>
                     </div>
                 </div>
             `).join("");
@@ -482,24 +431,6 @@ async function loadDashboard() {
             }
         }
         
-        async function approveDailyReward(rewardId) {
-            const result = await callAPI(`/admin/approve-daily/${rewardId}`, 'POST');
-            if (result && result.success) {
-                showToast("Airtime marked as sent!", "success");
-                await loadPendingDailyRewards();
-                updateAdminBadge();
-            }
-        }
-        
-        async function declineDailyReward(rewardId) {
-            const result = await callAPI(`/admin/decline-daily/${rewardId}`, 'POST');
-            if (result && result.success) {
-                showToast("Daily reward declined.", "error");
-                await loadPendingDailyRewards();
-                updateAdminBadge();
-            }
-        }
-        
         async function approveWin(winId) {
             const result = await callAPI(`/admin/approve-win/${winId}`, 'POST');
             if (result && result.success) {
@@ -520,9 +451,8 @@ async function loadDashboard() {
         
         function updateAdminBadge() {
             const pendingPaymentsCount = pendingPayments.filter(p => p.status === "pending").length;
-            const pendingRewardsCount = dailyRewards.filter(r => r.status === "pending").length;
             const pendingWinsCount = pendingWins.filter(w => w.status === "pending").length;
-            const totalPending = pendingPaymentsCount + pendingRewardsCount + pendingWinsCount;
+            const totalPending = pendingPaymentsCount + pendingWinsCount;
             const badge = document.getElementById("adminNotificationBadge");
             const totalBadge = document.getElementById("totalPendingBadge");
             if (totalPending > 0) {
@@ -534,7 +464,6 @@ async function loadDashboard() {
                 totalBadge.textContent = "0";
             }
             document.getElementById("paymentTabCount").textContent = pendingPaymentsCount;
-            document.getElementById("rewardTabCount").textContent = pendingRewardsCount;
             document.getElementById("winTabCount").textContent = pendingWinsCount;
         }
         
@@ -542,30 +471,31 @@ async function loadDashboard() {
         // GAME & PAYMENT FUNCTIONS
         // ============================================
         
-    async function updateFreeCreditBanner() {
-    try {
-        console.log("Calling API:", `${API_URL}/free-credit-count`);
-        const response = await fetch(`${API_URL}/free-credit-count`);
-        const data = await response.json();
-        console.log("Response data:", data);
-        
-        const claimedCount = data.claimedCount || 0;
-        const spotsLeft = 7 - claimedCount;
-        
-        const spotsLeftSpan = document.getElementById("spotsLeft");
-        if (spotsLeftSpan) {
-            spotsLeftSpan.textContent = spotsLeft > 0 ? spotsLeft : 0;
+        async function updateFreeCreditBanner() {
+            try {
+                console.log("Calling API:", `${API_URL}/free-credit-count`);
+                const response = await fetch(`${API_URL}/free-credit-count`);
+                const data = await response.json();
+                console.log("Response data:", data);
+                
+                const claimedCount = data.claimedCount || 0;
+                const MAX_FREE_USERS = 5;
+                const spotsLeft = MAX_FREE_USERS - claimedCount;
+                
+                const spotsLeftSpan = document.getElementById("spotsLeft");
+                if (spotsLeftSpan) {
+                    spotsLeftSpan.textContent = spotsLeft > 0 ? spotsLeft : 0;
+                }
+                
+                const banner = document.getElementById("freeDataBanner");
+                if (banner && spotsLeft <= 0) {
+                    banner.classList.add("promo-ended");
+                }
+            } catch (error) {
+                console.error("Error fetching free credit count:", error);
+                document.getElementById("spotsLeft").textContent = "?";
+            }
         }
-        
-        const banner = document.getElementById("freeDataBanner");
-        if (banner && spotsLeft <= 0) {
-            banner.classList.add("promo-ended");
-        }
-    } catch (error) {
-        console.error("Error fetching free credit count:", error);
-        document.getElementById("spotsLeft").textContent = "?";
-    }
-}
         
         function showLogin() {
             document.getElementById("loginForm").style.display = "block";
@@ -575,56 +505,6 @@ async function loadDashboard() {
         function showSignup() {
             document.getElementById("loginForm").style.display = "none";
             document.getElementById("signupForm").style.display = "block";
-        }
-        
-        function selectDailyRewardNetwork(network) {
-            selectedDailyRewardNetwork = network;
-            document.querySelectorAll('#rewardModal .network-option').forEach(opt => opt.classList.remove('selected'));
-            const options = document.querySelectorAll('#rewardModal .network-option');
-            for (let opt of options) {
-                if (opt.innerText.toLowerCase().includes(network)) opt.classList.add('selected');
-            }
-        }
-        
-        function checkDailyReward() {
-            const lastClaim = localStorage.getItem(`daily_reward_${currentUser.email}`);
-            const today = new Date().toDateString();
-            if (lastClaim !== today) {
-                selectedDailyRewardNetwork = "";
-                document.querySelectorAll('#rewardModal .network-option').forEach(opt => opt.classList.remove('selected'));
-                document.getElementById("rewardModal").style.display = "flex";
-            }
-        }
-        
-        async function claimDailyReward() {
-            const phone = document.getElementById("rewardPhone").value;
-            if (!selectedDailyRewardNetwork) {
-                showToast("Please select your network", "error");
-                return;
-            }
-            if (!phone || !/^(0[7-9][0-1]{1}[0-9]{8})$/.test(phone)) {
-                showToast("Enter valid phone number", "error");
-                return;
-            }
-            
-            const result = await callAPI('/submit-daily-reward', 'POST', {
-                userEmail: currentUser.email,
-                userName: currentUser.name,
-                phone: phone,
-                network: selectedDailyRewardNetwork,
-                amount: 50
-            });
-            
-            if (result && result.success) {
-                localStorage.setItem(`daily_reward_${currentUser.email}`, new Date().toDateString());
-                closeRewardModal();
-                document.getElementById("rewardPhone").value = "";
-                showToast("Request sent to admin!", "success");
-                await loadPendingDailyRewards();
-                updateAdminBadge();
-            } else {
-                showToast("Failed to submit request", "error");
-            }
         }
         
         function selectGame(price, reward, amount) {
@@ -669,12 +549,9 @@ async function loadDashboard() {
         
         async function playGame() {
             closeGameAccessModal();
-            // Get the latest token for this user
-            const paymentsResult = await callAPI('/admin/pending-payments');
-            const userPayments = paymentsResult?.filter(p => p.user_email === currentUser.email && p.status === 'completed');
-            if (userPayments && userPayments.length > 0) {
-                const latestPayment = userPayments[userPayments.length - 1];
-                window.location.href = `game.html?reward=${encodeURIComponent(latestPayment.reward)}&amount=${latestPayment.amount}&user=${encodeURIComponent(currentUser.email)}`;
+            
+            if (window.pendingGameToken) {
+                window.location.href = `game.html?reward=${encodeURIComponent(window.pendingGameToken.reward)}&amount=${window.pendingGameToken.amount}&user=${encodeURIComponent(currentUser.email)}&token=${window.pendingGameToken.tokenId}`;
             } else {
                 showToast("No active game session found. Please pay to play.", "error");
             }
@@ -684,9 +561,9 @@ async function loadDashboard() {
         // REFERRAL SHARING
         // ============================================
         
-      function getReferralMessage() {
-    return `Join OnSlot and win data! Use my code: ${currentUser.referral_code}\n\n${WEBSITE_URL}`;
-}
+        function getReferralMessage() {
+            return `Join OnSlot and win data! Use my code: ${currentUser.referral_code}\n\n${WEBSITE_URL}`;
+        }
         
         function copyReferralCode() {
             const message = getReferralMessage();
@@ -742,12 +619,6 @@ async function loadDashboard() {
             document.getElementById("transactionRef").value = "";
         }
         
-        function closeRewardModal() {
-            document.getElementById("rewardModal").style.display = "none";
-            document.getElementById("rewardPhone").value = "";
-            selectedDailyRewardNetwork = "";
-        }
-        
         function closeGameAccessModal() {
             document.getElementById("gameAccessModal").style.display = "none";
         }
@@ -758,32 +629,33 @@ async function loadDashboard() {
             content.classList.toggle("show");
             chevron.style.transform = content.classList.contains("show") ? "rotate(180deg)" : "rotate(0deg)";
         }
-     async function checkForGameToken() {
-    if (!currentUser || !currentUser.email) {
-        console.log("No current user");
-        return;
-    }
-    
-    try {
-        console.log("Checking token for:", currentUser.email);
-        const response = await fetch(`${API_URL}/user-game-token/${encodeURIComponent(currentUser.email)}`);
-        const data = await response.json();
-        console.log("Token response:", data);
         
-        if (data.hasToken) {
-            document.getElementById("winReward").textContent = data.reward;
-            document.getElementById("gameAccessModal").style.display = "flex";
-            window.pendingGameToken = {
-                tokenId: data.tokenId,
-                reward: data.reward,
-                amount: data.amount
-            };
-            showToast("Your payment has been approved! Click Play Game Now.", "success");
+        async function checkForGameToken() {
+            if (!currentUser || !currentUser.email) {
+                console.log("No current user");
+                return;
+            }
+            
+            try {
+                console.log("Checking token for:", currentUser.email);
+                const response = await fetch(`${API_URL}/user-game-token/${encodeURIComponent(currentUser.email)}`);
+                const data = await response.json();
+                console.log("Token response:", data);
+                
+                if (data.hasToken) {
+                    document.getElementById("winReward").textContent = data.reward;
+                    document.getElementById("gameAccessModal").style.display = "flex";
+                    window.pendingGameToken = {
+                        tokenId: data.tokenId,
+                        reward: data.reward,
+                        amount: data.amount
+                    };
+                    showToast("Your payment has been approved! Click Play Game Now.", "success");
+                }
+            } catch (error) {
+                console.error("Error checking game token:", error);
+            }
         }
-    } catch (error) {
-        console.error("Error checking game token:", error);
-    }
-}
         
         document.addEventListener("DOMContentLoaded", () => {
             loadDashboard();
