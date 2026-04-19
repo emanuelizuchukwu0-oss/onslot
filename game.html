@@ -194,7 +194,7 @@
     
     document.getElementById("rewardDisplay").textContent = targetReward;
     
-    // Function to mark token as used - MULTIPLE RETRIES
+    // Function to mark token as used
     async function markTokenAsUsed(retryCount = 0) {
         if (tokenMarked || !gameToken) return true;
         
@@ -252,7 +252,7 @@
         }
     }
     
-    // Game variables
+    // Game variables - FASTER STARTING SPEED
     let gameRunning = true;
     let score = 0;
     let canvas = document.getElementById("gameCanvas");
@@ -268,8 +268,11 @@
     
     let obstacles = [];
     let frameCounter = 0;
-    let baseSpeed = 4.5;
+    // FASTER STARTING SPEED (was 4.5, now 5.5)
+    let baseSpeed = 5.5;
     let currentSpeed = baseSpeed;
+    // MORE OBSTACLES: lower spawn rate (was 45, now 35)
+    let obstacleSpawnRate = 35;
     
     let timeLeft = 90;
     let timerInterval = null;
@@ -287,6 +290,7 @@
                 gameEnded = true;
                 if (!winTriggered) {
                     winTriggered = true;
+                    markTokenAsUsed();
                     showWinPhoneModal();
                 }
             } else {
@@ -295,8 +299,9 @@
                 let seconds = timeLeft % 60;
                 document.getElementById("timerValue").textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
                 
-                if (timeLeft === 40) { baseSpeed = 6.5; }
-                if (timeLeft === 20) { baseSpeed = 8; }
+                // Speed boosts at time thresholds
+                if (timeLeft === 40) { baseSpeed = 7.5; obstacleSpawnRate = 28; }
+                if (timeLeft === 20) { baseSpeed = 9; obstacleSpawnRate = 22; }
             }
         }, 1000);
     }
@@ -329,17 +334,24 @@
         ctx.fillStyle = "#ef4444";
         ctx.shadowBlur = 8;
         ctx.shadowColor = "#ef4444";
-        ctx.fillRect(x, y, 30, 30);
+        ctx.fillRect(x, y, 28, 28);
         ctx.fillStyle = "#dc2626";
-        ctx.fillRect(x + 6, y + 6, 18, 18);
+        ctx.fillRect(x + 5, y + 5, 18, 18);
         ctx.fillStyle = "#b91c1c";
-        ctx.fillRect(x + 11, y + 11, 8, 8);
+        ctx.fillRect(x + 10, y + 10, 8, 8);
+        // Add eyes to obstacles for character
+        ctx.fillStyle = "white";
+        ctx.fillRect(x + 7, y + 8, 4, 4);
+        ctx.fillRect(x + 17, y + 8, 4, 4);
+        ctx.fillStyle = "#1a1a2e";
+        ctx.fillRect(x + 8, y + 9, 2, 2);
+        ctx.fillRect(x + 18, y + 9, 2, 2);
     }
     
     function updateGame() {
         if (!gameRunning || gameEnded) return;
         
-        currentSpeed = baseSpeed + Math.floor(score / 150);
+        currentSpeed = baseSpeed + Math.floor(score / 120);
         
         jetVelocity += GRAVITY;
         jetY += jetVelocity;
@@ -351,10 +363,20 @@
         jetX = targetX;
         
         frameCounter++;
-        let spawnRate = Math.max(30, 45 - Math.floor(score / 80) - (timeLeft < 40 ? 10 : 0));
-        if (frameCounter > spawnRate) {
+        // Calculate spawn rate - gets harder as score increases
+        let currentSpawnRate = Math.max(22, obstacleSpawnRate - Math.floor(score / 60));
+        if (frameCounter > currentSpawnRate) {
             frameCounter = 0;
-            obstacles.push({ x: Math.random() * (canvas.width - 35), y: -40, width: 30, height: 30 });
+            // Sometimes spawn multiple obstacles at once for extra challenge
+            const numObstacles = Math.random() < 0.2 ? 2 : 1;
+            for (let o = 0; o < numObstacles; o++) {
+                let obsX = Math.random() * (canvas.width - 32);
+                // Ensure obstacles don't overlap too much
+                if (o === 1) {
+                    obsX = Math.min(canvas.width - 32, Math.max(0, obsX + 40));
+                }
+                obstacles.push({ x: obsX, y: -40, width: 28, height: 28 });
+            }
         }
         
         for (let i = 0; i < obstacles.length; i++) {
@@ -368,11 +390,12 @@
         }
         
         for (let i = 0; i < obstacles.length; i++) {
-            if (jetX < obstacles[i].x + 30 && jetX + JET_WIDTH > obstacles[i].x &&
-                jetY < obstacles[i].y + 30 && jetY + JET_HEIGHT > obstacles[i].y) {
+            if (jetX < obstacles[i].x + 28 && jetX + JET_WIDTH > obstacles[i].x &&
+                jetY < obstacles[i].y + 28 && jetY + JET_HEIGHT > obstacles[i].y) {
                 gameRunning = false;
                 gameEnded = true;
                 clearInterval(timerInterval);
+                markTokenAsUsed();
                 showGameOver();
                 return;
             }
@@ -387,6 +410,7 @@
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
+        // Draw road markings
         ctx.fillStyle = "#3a3a5a";
         ctx.fillRect(0, GROUND_Y + 15, canvas.width, 25);
         ctx.fillStyle = "#4a4a6a";
@@ -501,7 +525,6 @@
         }
         
         try {
-            // First, validate the token exists and is not used
             console.log("Validating token...");
             const response = await fetch(`${API_URL}/user-game-token/${encodeURIComponent(userEmail)}`);
             const data = await response.json();
@@ -514,27 +537,17 @@
                 return;
             }
             
-            // CRITICAL: Mark token as used IMMEDIATELY with retries
             console.log("Marking token as used...");
             const marked = await markTokenAsUsed();
             
             if (!marked) {
-                console.error("Failed to mark token as used after multiple attempts!");
+                console.error("Failed to mark token as used!");
                 alert("Error starting game. Please try again.");
                 window.location.href = "index.html";
                 return;
             }
             
-            // Double-check token is marked
-            const checkResponse = await fetch(`${API_URL}/user-game-token/${encodeURIComponent(userEmail)}`);
-            const checkData = await checkResponse.json();
-            console.log("After marking - token check:", checkData);
-            
-            if (checkData.hasToken) {
-                console.warn("Token still appears as active! This might cause issues.");
-            }
-            
-            console.log("Starting game...");
+            console.log("Starting game with faster speed and more obstacles!");
             startTimer();
             gameLoop();
             
