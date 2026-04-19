@@ -194,9 +194,9 @@
     
     document.getElementById("rewardDisplay").textContent = targetReward;
     
-    // Function to mark token as used in backend
+    // Function to mark token as used in backend - call this IMMEDIATELY
     async function markTokenAsUsed() {
-        if (tokenMarkedUsed || !gameToken) return;
+        if (tokenMarkedUsed || !gameToken) return false;
         
         try {
             const response = await fetch(`${API_URL}/use-game-token/${gameToken}`, { 
@@ -206,11 +206,13 @@
             const result = await response.json();
             if (result.success) {
                 tokenMarkedUsed = true;
-                console.log("Token marked as used");
+                console.log("✅ Token marked as used");
+                return true;
             }
         } catch (error) {
             console.error("Error marking token as used:", error);
         }
+        return false;
     }
     
     async function callAPI(endpoint, method = 'GET', body = null) {
@@ -273,8 +275,6 @@
                 gameEnded = true;
                 if (!winTriggered) {
                     winTriggered = true;
-                    // Mark token as used on WIN
-                    markTokenAsUsed();
                     showWinPhoneModal();
                 }
             } else {
@@ -361,8 +361,6 @@
                 gameRunning = false;
                 gameEnded = true;
                 clearInterval(timerInterval);
-                // Mark token as used on LOSS too!
-                markTokenAsUsed();
                 showGameOver();
                 return;
             }
@@ -474,7 +472,9 @@
         pointerX = canvasX;
     }
     
-    // Validate token before starting game
+    // ============================================
+    // START GAME - MARK TOKEN AS USED IMMEDIATELY
+    // ============================================
     (async function() {
         if (!gameToken) {
             alert("Invalid game session. Please pay to play.");
@@ -483,6 +483,7 @@
         }
         
         try {
+            // First, validate the token
             const response = await fetch(`${API_URL}/user-game-token/${encodeURIComponent(userEmail)}`);
             const data = await response.json();
             
@@ -492,11 +493,14 @@
                 return;
             }
             
-            // Mark token as used immediately when game starts
+            // CRITICAL: Mark token as used IMMEDIATELY when game loads
+            // This prevents the modal from showing again after loss
             await markTokenAsUsed();
             
+            // Start the game
             startTimer();
             gameLoop();
+            
         } catch (error) {
             console.error("Token validation error:", error);
             alert("Error validating game session. Please try again.");
