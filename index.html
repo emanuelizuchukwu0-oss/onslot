@@ -180,9 +180,9 @@
     </div>
 
     <!-- Modals -->
-    <div class="modal" id="paymentModal"><div class="modal-content"><button class="modal-close" onclick="closePaymentModal()"><i class="fas fa-times"></i></button><div class="modal-icon"><i class="fas fa-money-bill-wave"></i></div><h3>Pay to Play</h3><p>Send <strong>₦<span id="payAmount">0</span></strong> to this account</p><div class="bank-details"><p><strong>Bank:</strong> Moniepoint MFB</p><p><strong>Account Name:</strong> Sunday Ijeoma Anastasia</p><p><strong>Account Number:</strong> 9066051034</p><button class="copy-btn" onclick="copyAccount()">📋 Copy Account Number</button></div><div class="payment-methods"><div class="payment-method" data-method="bank_transfer" onclick="selectPaymentMethod('bank_transfer')"><i class="fas fa-exchange-alt"></i><span>Bank Transfer</span></div><div class="payment-method" data-method="ussd" onclick="selectPaymentMethod('ussd')"><i class="fas fa-mobile-alt"></i><span>USSD Transfer</span></div><div class="payment-method" data-method="pos" onclick="selectPaymentMethod('pos')"><i class="fas fa-credit-card"></i><span>Local POS</span></div><div class="payment-method" data-method="card" onclick="selectPaymentMethod('card')"><i class="fas fa-credit-card"></i><span>Card Payment</span></div></div><input type="text" id="transactionRef" class="confirm-input" placeholder="Transaction reference / Receipt code"><button class="confirm-btn" onclick="submitPayment()"><i class="fas fa-check-circle"></i> I Have Paid - Submit</button></div></div>
+    <div class="modal" id="paymentModal"><div class="modal-content"><button class="modal-close" onclick="closePaymentModal()"><i class="fas fa-times"></i></button><div class="modal-icon"><i class="fas fa-money-bill-wave"></i></div><h3>Pay to Play</h3><p>Send <strong>₦<span id="payAmount">0</span></strong> to this account</p><div class="bank-details"><p><strong>Bank:</strong> Moniepoint MFB</p><p><strong>Account Name:</strong> Sunday Ijeoma Anastasia</p><p><strong>Account Number:</strong> 9066051034</p><button class="copy-btn" onclick="copyAccount()">📋 Copy Account Number</button></div><div class="payment-methods"><div class="payment-method" data-method="bank_transfer" onclick="selectPaymentMethod('bank_transfer')"><i class="fas fa-exchange-alt"></i><span>Bank Transfer</span></div><div class="payment-method" data-method="ussd" onclick="selectPaymentMethod('ussd')"><i class="fas fa-mobile-alt"></i><span>USSD Transfer</span></div><div class="payment-method" data-method="pos" onclick="selectPaymentMethod('pos')"><i class="fas fa-credit-card"></i><span>Local POS</span></div><div class="payment-method" data-method="card" onclick="selectPaymentMethod('card')"><i class="fas fa-credit-card"></i><span>Card Payment</span></div></div><input type="text" id="transactionRef" class="confirm-input" placeholder="Transaction reference / Receipt code"><button class="confirm-btn" id="submitPaymentBtn" onclick="submitPayment()"><i class="fas fa-check-circle"></i> I Have Paid - Submit</button></div></div>
     
-    <div class="modal" id="gameAccessModal"><div class="modal-content"><button class="modal-close" onclick="closeGameAccessModal()"><i class="fas fa-times"></i></button><div class="modal-icon" style="color:#10b981;"><i class="fas fa-check-circle"></i></div><h3>Payment Verified!</h3><p>Click below to play and win <strong id="winReward">500MB</strong>!</p><button class="confirm-btn" onclick="playGame()" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><i class="fas fa-gamepad"></i> Play Game Now</button></div></div>
+    <div class="modal" id="gameAccessModal"><div class="modal-content"><button class="modal-close" onclick="closeGameAccessModal()"><i class="fas fa-times"></i></button><div class="modal-icon" style="color:#10b981;"><i class="fas fa-check-circle"></i></div><h3>Payment Verified!</h3><p>Click below to play and win <strong id="winReward">500MB</strong>!</p><p style="color:#f59e0b; font-size:0.8rem;">⚠️ Note: If you lose, you'll need to pay again to play another round!</p><button class="confirm-btn" onclick="playGame()" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><i class="fas fa-gamepad"></i> Play Game Now</button></div></div>
     
     <div id="adminSuccessOverlay" style="display: none;"></div>
     
@@ -201,6 +201,8 @@
         let pendingPayments = [];
         let pendingWins = [];
         let gameTokens = [];
+        let tokenCheckInterval = null;
+        let isSubmittingPayment = false;  // Prevent double submission
         const WEBSITE_URL = "https://onslot-frontend.onrender.com";
         
         // ============================================
@@ -221,6 +223,26 @@
                 console.error('API Error:', error);
                 showToast('Network error. Please check your connection.', 'error');
                 return null;
+            }
+        }
+        
+        // ============================================
+        // TOKEN POLLING (Real-time game access)
+        // ============================================
+        
+        function startTokenPolling() {
+            if (tokenCheckInterval) clearInterval(tokenCheckInterval);
+            tokenCheckInterval = setInterval(async () => {
+                if (currentUser && currentUser.email) {
+                    await checkForGameToken();
+                }
+            }, 3000); // Check every 3 seconds
+        }
+        
+        function stopTokenPolling() {
+            if (tokenCheckInterval) {
+                clearInterval(tokenCheckInterval);
+                tokenCheckInterval = null;
             }
         }
         
@@ -280,6 +302,7 @@
         function logout() {
             currentUser = null;
             sessionStorage.removeItem('userEmail');
+            stopTokenPolling();
             document.getElementById("authSection").style.display = "flex";
             document.getElementById("dashboardContent").style.display = "none";
             document.getElementById("userInfo").style.display = "none";
@@ -315,7 +338,10 @@
                     loadAdminData();
                     updateFreeCreditBanner();
                     
-                    // CHECK FOR GAME TOKEN AFTER PAYMENT APPROVAL
+                    // Start polling for game tokens (real-time)
+                    startTokenPolling();
+                    
+                    // Check once immediately
                     await checkForGameToken();
                     
                     setInterval(loadAdminData, 5000);
@@ -520,30 +546,88 @@
         }
         
         async function submitPayment() {
+            // Prevent double submission
+            if (isSubmittingPayment) {
+                showToast("Please wait, processing your payment...", "warning");
+                return;
+            }
+            
             const transactionRef = document.getElementById("transactionRef").value;
             if (!transactionRef) {
                 showToast("Enter transaction reference", "error");
                 return;
             }
             
-            const result = await callAPI('/submit-payment', 'POST', {
-                userEmail: currentUser.email,
-                userName: currentUser.name,
-                userPhone: currentUser.phone,
-                amount: selectedGame.price,
-                reward: selectedGame.reward,
-                transactionRef: transactionRef,
-                paymentMethod: selectedPaymentMethod
-            });
+            isSubmittingPayment = true;
+            const submitBtn = document.getElementById("submitPaymentBtn");
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> Processing...';
             
-            if (result && result.success) {
-                closePaymentModal();
-                document.getElementById("transactionRef").value = "";
-                showToast("Payment submitted! Admin will verify.", "success");
-                await loadPendingPayments();
-                updateAdminBadge();
-            } else {
-                showToast("Failed to submit payment", "error");
+            try {
+                const result = await callAPI('/submit-payment', 'POST', {
+                    userEmail: currentUser.email,
+                    userName: currentUser.name,
+                    userPhone: currentUser.phone,
+                    amount: selectedGame.price,
+                    reward: selectedGame.reward,
+                    transactionRef: transactionRef,
+                    paymentMethod: selectedPaymentMethod
+                });
+                
+                if (result && result.success) {
+                    closePaymentModal();
+                    document.getElementById("transactionRef").value = "";
+                    showToast("Payment submitted! Admin will verify.", "success");
+                    await loadPendingPayments();
+                    updateAdminBadge();
+                } else {
+                    showToast("Failed to submit payment", "error");
+                }
+            } catch (error) {
+                showToast("Error submitting payment", "error");
+            } finally {
+                isSubmittingPayment = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> I Have Paid - Submit';
+            }
+        }
+        
+        async function checkForGameToken() {
+            if (!currentUser || !currentUser.email) {
+                console.log("No current user");
+                return;
+            }
+            
+            try {
+                console.log("Checking token for:", currentUser.email);
+                const response = await fetch(`${API_URL}/user-game-token/${encodeURIComponent(currentUser.email)}`);
+                const data = await response.json();
+                console.log("Token response:", data);
+                
+                if (data.hasToken && !window.gameModalShowing) {
+                    window.gameModalShowing = true;
+                    
+                    document.getElementById("winReward").textContent = data.reward;
+                    document.getElementById("gameAccessModal").style.display = "flex";
+                    window.pendingGameToken = {
+                        tokenId: data.tokenId,
+                        reward: data.reward,
+                        amount: data.amount
+                    };
+                    showToast("Your payment has been approved! Click Play Game Now.", "success");
+                    
+                    const modal = document.getElementById("gameAccessModal");
+                    const modalClose = document.querySelector("#gameAccessModal .modal-close");
+                    const resetModalFlag = () => {
+                        window.gameModalShowing = false;
+                        modal.removeEventListener('click', resetModalFlag);
+                        if (modalClose) modalClose.removeEventListener('click', resetModalFlag);
+                    };
+                    modal.addEventListener('click', resetModalFlag);
+                    if (modalClose) modalClose.addEventListener('click', resetModalFlag);
+                }
+            } catch (error) {
+                console.error("Error checking game token:", error);
             }
         }
         
@@ -609,7 +693,7 @@
             const container = document.getElementById("toastContainer");
             const toast = document.createElement("div");
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
@@ -617,6 +701,13 @@
         function closePaymentModal() {
             document.getElementById("paymentModal").style.display = "none";
             document.getElementById("transactionRef").value = "";
+            // Reset submission flag when closing modal
+            isSubmittingPayment = false;
+            const submitBtn = document.getElementById("submitPaymentBtn");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> I Have Paid - Submit';
+            }
         }
         
         function closeGameAccessModal() {
@@ -628,33 +719,6 @@
             const chevron = document.getElementById("adminChevron");
             content.classList.toggle("show");
             chevron.style.transform = content.classList.contains("show") ? "rotate(180deg)" : "rotate(0deg)";
-        }
-        
-        async function checkForGameToken() {
-            if (!currentUser || !currentUser.email) {
-                console.log("No current user");
-                return;
-            }
-            
-            try {
-                console.log("Checking token for:", currentUser.email);
-                const response = await fetch(`${API_URL}/user-game-token/${encodeURIComponent(currentUser.email)}`);
-                const data = await response.json();
-                console.log("Token response:", data);
-                
-                if (data.hasToken) {
-                    document.getElementById("winReward").textContent = data.reward;
-                    document.getElementById("gameAccessModal").style.display = "flex";
-                    window.pendingGameToken = {
-                        tokenId: data.tokenId,
-                        reward: data.reward,
-                        amount: data.amount
-                    };
-                    showToast("Your payment has been approved! Click Play Game Now.", "success");
-                }
-            } catch (error) {
-                console.error("Error checking game token:", error);
-            }
         }
         
         document.addEventListener("DOMContentLoaded", () => {
