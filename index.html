@@ -237,10 +237,11 @@
         let selectedPaymentMethod = "bank_transfer";
         let pendingPayments = [];
         let pendingWins = [];
-        let gameTokens = [];
         let tokenCheckInterval = null;
         let isSubmittingPayment = false;
         let hasShownFreeCreditOverlay = false;
+        // TRACK WHICH TOKENS HAVE BEEN SHOWN (prevents showing same token on refresh)
+        let shownTokens = new Set();
         const WEBSITE_URL = "https://onslot-frontend.onrender.com";
         
         // ============================================
@@ -265,10 +266,8 @@
         }
         
         // ============================================
-        // TOKEN POLLING (Real-time game access - ONLY checks for new tokens)
+        // TOKEN POLLING (Only shows NEW tokens, not ones already seen)
         // ============================================
-        
-        let lastCheckedTokenId = null;
         
         function startTokenPolling() {
             if (tokenCheckInterval) clearInterval(tokenCheckInterval);
@@ -286,7 +285,7 @@
             }
         }
         
-        // Only shows modal for NEW tokens (not on every check)
+        // Only shows modal for NEW tokens (not on refresh)
         async function checkForNewGameToken() {
             if (!currentUser || !currentUser.email) return;
             
@@ -294,9 +293,13 @@
                 const response = await fetch(`${API_URL}/user-game-token/${encodeURIComponent(currentUser.email)}`);
                 const data = await response.json();
                 
-                // If there's a token and it's different from the last one we showed
-                if (data.hasToken && data.tokenId !== lastCheckedTokenId && !window.gameModalShowing) {
-                    lastCheckedTokenId = data.tokenId;
+                // Only show modal if:
+                // 1. There is a token
+                // 2. We haven't shown this token before
+                // 3. No modal is currently showing
+                if (data.hasToken && !shownTokens.has(data.tokenId) && !window.gameModalShowing) {
+                    // Mark this token as shown
+                    shownTokens.add(data.tokenId);
                     window.gameModalShowing = true;
                     
                     document.getElementById("winReward").textContent = data.reward;
@@ -438,7 +441,6 @@
                 loadDashboard();
                 updateFreeCreditBanner();
                 
-                // Show free credit overlay for first 5 users
                 if (currentUser.got_free_credit && !currentUser.free_credit_claimed) {
                     setTimeout(() => showFreeCreditOverlay(), 1000);
                 }
@@ -451,7 +453,6 @@
             currentUser = null;
             sessionStorage.removeItem('userEmail');
             stopTokenPolling();
-            lastCheckedTokenId = null;
             document.getElementById("authSection").style.display = "flex";
             document.getElementById("dashboardContent").style.display = "none";
             document.getElementById("userInfo").style.display = "none";
@@ -487,7 +488,6 @@
                     loadAdminData();
                     updateFreeCreditBanner();
                     
-                    // Start polling for NEW game tokens (won't show modal unless there's a new one)
                     startTokenPolling();
                     
                     setInterval(loadAdminData, 5000);

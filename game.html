@@ -165,15 +165,15 @@
     </div>
 </div>
 
-<!-- Game Over Modal -->
+<!-- Game Over Modal - NO "Try Again" button! Must pay again -->
 <div id="gameOverModal" class="modal">
     <div class="modal-content">
         <div style="font-size: 70px;">💥</div>
         <h2 style="color: #ef4444;">GAME OVER!</h2>
         <p>You hit an obstacle!</p>
         <p>Your score: <span id="finalScore">0</span></p>
-        <button onclick="location.reload()">Try Again</button>
-        <button onclick="goBackToDashboard()" style="margin-top: 10px; background: #64748b;">Dashboard</button>
+        <p style="color: #f59e0b; margin-top: 15px;">⚠️ You need to pay again to play another round! ⚠️</p>
+        <button onclick="goBackToDashboard()" style="margin-top: 20px;">Back to Dashboard</button>
     </div>
 </div>
 
@@ -181,7 +181,6 @@
     // ============================================
     // BACKEND API CONFIGURATION
     // ============================================
-    // CHANGE THIS TO YOUR RENDER BACKEND URL!!!
     const API_URL = 'https://onslot.onrender.com/api';
     
     // Get game data from URL params
@@ -189,9 +188,35 @@
     let targetReward = urlParams.get('reward') || "500MB";
     let amountPaid = urlParams.get('amount') || "200";
     let userEmail = urlParams.get('user') || "";
+    let gameToken = urlParams.get('token') || "";
     let selectedWinNetwork = "";
     
     document.getElementById("rewardDisplay").textContent = targetReward;
+    
+    // Validate token with backend
+    async function validateToken() {
+        if (!gameToken || !userEmail) {
+            alert("Invalid game session. Please pay to play.");
+            window.location.href = "index.html";
+            return false;
+        }
+        
+        try {
+            const response = await fetch(`${API_URL}/user-game-token/${encodeURIComponent(userEmail)}`);
+            const data = await response.json();
+            
+            // Check if token exists and matches
+            if (!data.hasToken || data.tokenId != gameToken) {
+                alert("This game session has expired or been used. Please pay to play again.");
+                window.location.href = "index.html";
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error("Token validation error:", error);
+            return false;
+        }
+    }
     
     async function callAPI(endpoint, method = 'GET', body = null) {
         const options = {
@@ -407,7 +432,9 @@
         document.getElementById("gameOverModal").style.display = "flex";
     }
     
-    function goBackToDashboard() { window.location.href = "index.html"; }
+    function goBackToDashboard() { 
+        window.location.href = "index.html"; 
+    }
     
     async function submitWinWithPhone() {
         const phone = document.getElementById("winPhoneNumber").value;
@@ -419,7 +446,7 @@
         
         const result = await callAPI('/submit-win', 'POST', {
             userEmail: userEmail,
-            userName: "User", // Will be fetched from backend
+            userName: "User",
             userPhone: phone,
             network: selectedWinNetwork,
             reward: targetReward,
@@ -447,18 +474,18 @@
         canvasX = Math.max(JET_WIDTH/2, Math.min(canvasX, canvas.width - JET_WIDTH/2));
         pointerX = canvasX;
     }
-    async function playGame() {
-    closeGameAccessModal();
     
-    if (window.pendingGameToken) {
-        // Use the token from the pending approval
-        window.location.href = `game.html?reward=${encodeURIComponent(window.pendingGameToken.reward)}&amount=${window.pendingGameToken.amount}&user=${encodeURIComponent(currentUser.email)}&token=${window.pendingGameToken.tokenId}`;
-    } else if (window.approvedGameData) {
-        window.location.href = `game.html?reward=${encodeURIComponent(window.approvedGameData.reward)}&amount=${window.approvedGameData.price}&user=${encodeURIComponent(currentUser.email)}`;
-    } else {
-        showToast("No active game session found. Please pay to play.", "error");
-    }
-}
+    // Validate token before starting game
+    (async function() {
+        const isValid = await validateToken();
+        if (isValid) {
+            // Mark token as used
+            await fetch(`${API_URL}/use-game-token/${gameToken}`, { method: 'POST' });
+            startTimer();
+            gameLoop();
+        }
+    })();
+    
     canvas.addEventListener("mousemove", (e) => { handlePointerMove(e.clientX); });
     canvas.addEventListener("click", () => { jump(); });
     canvas.addEventListener("touchmove", (e) => { e.preventDefault(); handlePointerMove(e.touches[0].clientX); });
@@ -469,9 +496,6 @@
         if (e.key === "ArrowRight") pointerX = Math.min(canvas.width - JET_WIDTH/2, pointerX + 25);
         if (e.key === "ArrowUp" || e.key === " " || e.key === "Space") { e.preventDefault(); jump(); }
     });
-    
-    startTimer();
-    gameLoop();
 </script>
 </body>
 </html>
