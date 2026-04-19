@@ -205,7 +205,7 @@
     <div id="dashboardContent" class="dashboard-content">
         <section class="hero"><div class="hero-content"><div class="hero-badge"><span class="badge-pulse"></span>Play & Earn</div><h1 class="hero-title">Win Data<br><span class="gradient-text">By Playing Games!</span></h1><p class="hero-subtitle">Choose your game entry fee and win data bundles!</p></div></section>
         <div class="container">
-            <div class="free-data-banner" id="freeDataBanner"><h4><i class="fas fa-gift"></i> 🎉 FIRST 5 USERS GET ₦100 FREE CREDIT! 🎉</h4><p>First <span id="spotsLeft">5</span> people to sign up get ₦100 credit to play games!</p></div>
+            <div class="free-data-banner" id="freeDataBanner"><h4><i class="fas fa-gift"></i> 🎉 FIRST 5 USERS GET ₦100 FREE CREDIT! 🎉</h4><p>Only <span id="spotsLeft">5</span> spots left! Sign up now to get ₦100 free credit!</p></div>
             <div class="game-options">
                 <div class="game-card" onclick="selectGame('200', '500MB', 200)"><div class="game-card-header"><div class="game-card-info"><h3>✈️ JET RACER</h3><p>Tap to jump | Move side to side</p></div><div><div class="game-price">₦200</div><div class="game-reward">🏆 Win: 500MB</div></div></div></div>
                 <div class="game-card" onclick="selectGame('400', '1GB', 400)"><div class="game-card-header"><div class="game-card-info"><h3>✈️ JET RACER</h3><p>Tap to jump | Move side to side</p></div><div><div class="game-price">₦400</div><div class="game-reward">🏆 Win: 1GB</div></div></div></div>
@@ -318,7 +318,7 @@
         }
         
         // ============================================
-        // FREE CREDIT OVERLAY - NOW SAVES TO BACKEND
+        // FREE CREDIT OVERLAY
         // ============================================
         
         function showFreeCreditOverlay() {
@@ -329,8 +329,9 @@
             overlay.innerHTML = `
                 <div class="free-credit-card">
                     <div class="gift-icon"><i class="fas fa-gift"></i></div>
-                    <h2>🎉 You've Got FREE Credit! 🎉</h2>
-                    <p>You are one of the first 5 people to sign up! You've earned <strong style="color: #10b981;">₦100 FREE credit</strong> to play games!</p>
+                    <h2>🎉 Congratulations! 🎉</h2>
+                    <p>You are one of the lucky first 5 people to sign up!</p>
+                    <p>You've earned <strong style="color: #10b981;">₦100 FREE credit</strong> to play games!</p>
                     <div class="network-select" style="margin-bottom: 15px;">
                         <label>Select Your Network:</label>
                         <div class="network-buttons">
@@ -366,7 +367,7 @@
                 return;
             }
             if (!phone || !/^(0[7-9][0-1]{1}[0-9]{8})$/.test(phone)) {
-                showToast("Enter valid phone number", "error");
+                showToast("Enter valid phone number (e.g., 08012345678)", "error");
                 return;
             }
             
@@ -393,6 +394,7 @@
                         userEmail: currentUser.email
                     });
                     
+                    // Refresh admin data if admin panel is open
                     await loadAdminData();
                 } else {
                     showToast("Failed to submit request. Please try again.", "error");
@@ -437,6 +439,7 @@
                 document.getElementById("signupPhone").value = "";
                 document.getElementById("signupPassword").value = "";
                 document.getElementById("referralCodeInput").value = "";
+                updateFreeCreditBanner();
             } else {
                 showToast(result?.error || "Signup failed", "error");
             }
@@ -460,8 +463,8 @@
                 loadDashboard();
                 updateFreeCreditBanner();
                 
-                // Show free credit overlay only if user hasn't claimed it yet
-                if (currentUser.got_free_credit && !currentUser.free_credit_claimed) {
+                // Show free credit overlay ONLY if user got free credit and hasn't claimed it yet
+                if (currentUser.got_free_credit === true && currentUser.free_credit_claimed === false) {
                     setTimeout(() => showFreeCreditOverlay(), 1000);
                 }
             } else {
