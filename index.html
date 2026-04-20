@@ -265,7 +265,9 @@
         let pendingFunding = [];
         let pendingPurchases = [];
         let pendingReferrals = [];
-        let statusPollingInterval = null;
+        let fundingPollingInterval = null;
+        let purchasePollingInterval = null;
+        let referralPollingInterval = null;
         let hasShownWelcomeOverlay = false;
         let hasShownReferralOverlay = false;
         
@@ -298,7 +300,6 @@
             document.body.appendChild(overlay);
         }
         
-        // Loading overlay - appears briefly then disappears after 2 seconds
         function showLoadingOverlay(message = "Processing your request... Please wait a moment") {
             const existing = document.querySelector('.loading-overlay');
             if (existing) existing.remove();
@@ -314,7 +315,6 @@
             `;
             document.body.appendChild(overlay);
             
-            // Auto-hide loading overlay after 2 seconds
             setTimeout(() => {
                 hideLoadingOverlay();
             }, 2000);
@@ -326,6 +326,10 @@
         }
         
         function showFundingSuccessOverlay(amount) {
+            // Remove any existing success overlay first
+            const existing = document.querySelector('.success-overlay');
+            if (existing) existing.remove();
+            
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
             overlay.innerHTML = `
@@ -341,6 +345,9 @@
         }
         
         function showPurchaseSuccessOverlay(planSize, phoneNumber) {
+            const existing = document.querySelector('.success-overlay');
+            if (existing) existing.remove();
+            
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
             overlay.innerHTML = `
@@ -356,6 +363,9 @@
         }
         
         function showReferralSuccessOverlay() {
+            const existing = document.querySelector('.success-overlay');
+            if (existing) existing.remove();
+            
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
             overlay.innerHTML = `
@@ -435,14 +445,7 @@
             
             if (result && result.success) {
                 closeReferralRewardOverlay();
-                const pending = await callAPI('/admin/pending-referrals');
-                const latest = pending?.find(r => r.user_email === currentUser.email && r.status === 'pending');
-                if (latest) {
-                    startReferralPolling(latest.id);
-                } else {
-                    hideLoadingOverlay();
-                    showToast("Referral reward request sent to admin!", "success");
-                }
+                startReferralPolling();
                 await loadAdminData();
             } else {
                 hideLoadingOverlay();
@@ -450,61 +453,73 @@
             }
         }
         
-        // ============ POLLING FUNCTIONS - Only shows success overlay when admin clicks success ============
+        // ============ POLLING FUNCTIONS ============
         
-        function startFundingPolling(pendingId, amount) {
-            if (statusPollingInterval) clearInterval(statusPollingInterval);
+        function startFundingPolling() {
+            if (fundingPollingInterval) clearInterval(fundingPollingInterval);
             
-            statusPollingInterval = setInterval(async () => {
+            fundingPollingInterval = setInterval(async () => {
                 const result = await callAPI('/admin/pending-funding');
-                const item = result?.find(p => p.id == pendingId);
-                if (item && item.status === 'completed') {
-                    clearInterval(statusPollingInterval);
-                    showFundingSuccessOverlay(amount);
-                    await loadAdminData();
-                    const userData = await callAPI(`/user/${encodeURIComponent(currentUser.email)}`);
-                    if (userData) { currentUser.wallet_balance = userData.wallet_balance; document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`; }
-                } else if (item && item.status === 'declined') {
-                    clearInterval(statusPollingInterval);
-                    showToast("Your funding request was declined.", "error");
+                if (result) {
+                    const pendingItem = result.find(p => p.user_email === currentUser?.email && p.status === 'pending');
+                    if (!pendingItem) {
+                        // Check for completed items that were just approved
+                        const allItems = result;
+                        const completedItem = allItems.find(p => p.user_email === currentUser?.email && p.status === 'completed');
+                        if (completedItem && fundingPollingInterval) {
+                            clearInterval(fundingPollingInterval);
+                            fundingPollingInterval = null;
+                            showFundingSuccessOverlay(completedItem.amount);
+                            await loadAdminData();
+                            const userData = await callAPI(`/user/${encodeURIComponent(currentUser.email)}`);
+                            if (userData) { currentUser.wallet_balance = userData.wallet_balance; document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`; }
+                        }
+                    }
                 }
             }, 3000);
         }
         
-        function startPurchasePolling(pendingId, planSize, phoneNumber) {
-            if (statusPollingInterval) clearInterval(statusPollingInterval);
+        function startPurchasePolling() {
+            if (purchasePollingInterval) clearInterval(purchasePollingInterval);
             
-            statusPollingInterval = setInterval(async () => {
+            purchasePollingInterval = setInterval(async () => {
                 const result = await callAPI('/admin/pending-purchases');
-                const item = result?.find(p => p.id == pendingId);
-                if (item && item.status === 'completed') {
-                    clearInterval(statusPollingInterval);
-                    showPurchaseSuccessOverlay(planSize, phoneNumber);
-                    await loadAdminData();
-                } else if (item && item.status === 'declined') {
-                    clearInterval(statusPollingInterval);
-                    showToast("Your purchase was declined. Amount refunded.", "error");
-                    const userData = await callAPI(`/user/${encodeURIComponent(currentUser.email)}`);
-                    if (userData) { currentUser.wallet_balance = userData.wallet_balance; document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`; }
+                if (result) {
+                    const pendingItem = result.find(p => p.user_email === currentUser?.email && p.status === 'pending');
+                    if (!pendingItem) {
+                        const allItems = result;
+                        const completedItem = allItems.find(p => p.user_email === currentUser?.email && p.status === 'completed');
+                        if (completedItem && purchasePollingInterval) {
+                            clearInterval(purchasePollingInterval);
+                            purchasePollingInterval = null;
+                            showPurchaseSuccessOverlay(completedItem.plan_size, completedItem.phone_number);
+                            await loadAdminData();
+                        }
+                    }
                 }
             }, 3000);
         }
         
-        function startReferralPolling(pendingId) {
-            if (statusPollingInterval) clearInterval(statusPollingInterval);
+        function startReferralPolling() {
+            if (referralPollingInterval) clearInterval(referralPollingInterval);
             
-            statusPollingInterval = setInterval(async () => {
+            referralPollingInterval = setInterval(async () => {
                 const result = await callAPI('/admin/pending-referrals');
-                const item = result?.find(r => r.id == pendingId);
-                if (item && item.status === 'completed') {
-                    clearInterval(statusPollingInterval);
-                    showReferralSuccessOverlay();
-                    await loadAdminData();
-                    const userData = await callAPI(`/user/${encodeURIComponent(currentUser.email)}`);
-                    if (userData) { currentUser.wallet_balance = userData.wallet_balance; document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`; }
-                } else if (item && item.status === 'declined') {
-                    clearInterval(statusPollingInterval);
-                    showToast("Your referral reward was declined.", "error");
+                if (result) {
+                    const pendingItem = result.find(r => r.user_email === currentUser?.email && r.status === 'pending');
+                    if (!pendingItem) {
+                        const allItems = result;
+                        const completedItem = allItems.find(r => r.user_email === currentUser?.email && r.status === 'completed');
+                        if (completedItem && referralPollingInterval) {
+                            clearInterval(referralPollingInterval);
+                            referralPollingInterval = null;
+                            hideLoadingOverlay();
+                            showReferralSuccessOverlay();
+                            await loadAdminData();
+                            const userData = await callAPI(`/user/${encodeURIComponent(currentUser.email)}`);
+                            if (userData) { currentUser.wallet_balance = userData.wallet_balance; document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`; }
+                        }
+                    }
                 }
             }, 3000);
         }
@@ -557,7 +572,9 @@
             sessionStorage.removeItem('userEmail');
             hasShownWelcomeOverlay = false;
             hasShownReferralOverlay = false;
-            if (statusPollingInterval) clearInterval(statusPollingInterval);
+            if (fundingPollingInterval) clearInterval(fundingPollingInterval);
+            if (purchasePollingInterval) clearInterval(purchasePollingInterval);
+            if (referralPollingInterval) clearInterval(referralPollingInterval);
             document.getElementById("authSection").style.display = "flex";
             document.getElementById("dashboardContent").style.display = "none";
             document.getElementById("userInfo").style.display = "none";
@@ -693,13 +710,7 @@
             });
             
             if (result && result.success) {
-                const pending = await callAPI('/admin/pending-funding');
-                const latest = pending?.find(p => p.user_email === currentUser.email && p.status === 'pending');
-                if (latest) {
-                    startFundingPolling(latest.id, selectedAmount);
-                } else {
-                    showToast("Funding request submitted! Admin will verify.", "success");
-                }
+                startFundingPolling();
                 document.getElementById("accountDetails").style.display = "none";
                 document.getElementById("amountSection").classList.remove("show");
                 document.getElementById("paymentSection").classList.remove("show");
@@ -732,13 +743,7 @@
             });
             
             if (result && result.success) {
-                const pending = await callAPI('/admin/pending-purchases');
-                const latest = pending?.find(p => p.user_email === currentUser.email && p.status === 'pending');
-                if (latest) {
-                    startPurchasePolling(latest.id, selectedPlan.size, phone);
-                } else {
-                    showToast("Purchase request submitted! Admin will verify.", "success");
-                }
+                startPurchasePolling();
                 currentUser.wallet_balance -= selectedPlan.price;
                 document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`;
                 await loadAdminData();
