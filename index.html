@@ -63,6 +63,10 @@
         .amount-btn { background: rgba(30,41,59,0.6); border: 2px solid rgba(255,255,255,0.08); border-radius: 60px; padding: 12px 24px; cursor: pointer; transition: all 0.2s; font-weight: 600; }
         .amount-btn:hover { border-color: #f59e0b; background: rgba(245,158,11,0.1); }
         .amount-btn.selected { border-color: #f59e0b; background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .custom-amount-container { margin: 15px 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .custom-amount-container input { flex: 2; padding: 12px; background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: white; font-size: 1rem; outline: none; }
+        .custom-amount-container input:focus { border-color: #f59e0b; }
+        .custom-amount-container button { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.3); padding: 12px 20px; border-radius: 40px; color: #f59e0b; cursor: pointer; }
         .proceed-payment-btn { background: linear-gradient(135deg, #10b981, #059669); border: none; padding: 14px; border-radius: 50px; width: 100%; color: white; font-weight: 600; cursor: pointer; margin-top: 10px; display: none; }
         .proceed-payment-btn.show { display: block; }
         .payment-section { display: none; margin-top: 20px; }
@@ -170,7 +174,7 @@
         .toast.error { border-left: 3px solid #ef4444; }
         .footer { background: rgba(5,5,5,0.9); padding: 40px 24px 20px; text-align: center; }
         .footer p { color: #94a3b8; font-size: 0.8rem; }
-        @media (max-width: 768px) { .hero-title { font-size: 2rem; } .plans-grid { grid-template-columns: repeat(2, 1fr); } .pending-item { flex-direction: column; } .item-actions { width: 100%; justify-content: center; } .amount-buttons { justify-content: center; } .payment-methods { flex-direction: column; } }
+        @media (max-width: 768px) { .hero-title { font-size: 2rem; } .plans-grid { grid-template-columns: repeat(2, 1fr); } .pending-item { flex-direction: column; } .item-actions { width: 100%; justify-content: center; } .amount-buttons { justify-content: center; } .payment-methods { flex-direction: column; } .custom-amount-container { flex-direction: column; } .custom-amount-container button { width: 100%; } }
     </style>
 </head>
 <body>
@@ -199,12 +203,16 @@
                 
                 <div id="amountSection" class="amount-section">
                     <div class="amount-buttons">
-                        <div class="amount-btn" data-amount="200">₦200</div>
+                        <div class="amount-btn" data-amount="400">₦400</div>
                         <div class="amount-btn" data-amount="500">₦500</div>
                         <div class="amount-btn" data-amount="1000">₦1,000</div>
                         <div class="amount-btn" data-amount="2000">₦2,000</div>
                         <div class="amount-btn" data-amount="5000">₦5,000</div>
                         <div class="amount-btn" data-amount="10000">₦10,000</div>
+                    </div>
+                    <div class="custom-amount-container">
+                        <input type="number" id="customAmount" placeholder="Enter custom amount (₦400 minimum)" min="400" step="100">
+                        <button id="setCustomAmountBtn">Use Custom Amount</button>
                     </div>
                     <button id="proceedPaymentBtn" class="proceed-payment-btn">I Have Paid - Proceed</button>
                 </div>
@@ -261,7 +269,6 @@
         let hasShownWelcomeOverlay = false;
         let hasShownReferralOverlay = false;
         
-        // Check for existing session on page load
         async function checkExistingSession() {
             const savedEmail = sessionStorage.getItem('userEmail');
             if (savedEmail) {
@@ -271,7 +278,6 @@
         
         // ============ OVERLAY FUNCTIONS ============
         
-        // Welcome Overlay
         function showWelcomeOverlay() {
             if (hasShownWelcomeOverlay) return;
             hasShownWelcomeOverlay = true;
@@ -292,8 +298,7 @@
             document.body.appendChild(overlay);
         }
         
-        // Loading Overlay - Wait 1 min after payment
-        function showLoadingOverlay(message = "Processing your request... Please wait") {
+        function showLoadingOverlay(message = "Processing your request... Please wait a moment") {
             const existing = document.querySelector('.loading-overlay');
             if (existing) existing.remove();
             
@@ -303,7 +308,7 @@
                 <div class="loading-card">
                     <div class="loading-spinner"></div>
                     <p>${message}</p>
-                    <p style="font-size: 0.8rem; margin-top: 10px;">⏰ Please wait about 1 minute for admin approval</p>
+                    <p style="font-size: 0.8rem; margin-top: 10px;">⏰ Please wait a moment for admin approval</p>
                 </div>
             `;
             document.body.appendChild(overlay);
@@ -314,7 +319,6 @@
             if (overlay) overlay.remove();
         }
         
-        // Success Overlay for Funding
         function showFundingSuccessOverlay(amount) {
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
@@ -330,7 +334,6 @@
             document.body.appendChild(overlay);
         }
         
-        // Success Overlay for Purchase
         function showPurchaseSuccessOverlay(planSize, phoneNumber) {
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
@@ -346,7 +349,6 @@
             document.body.appendChild(overlay);
         }
         
-        // Success Overlay for Referral Reward
         function showReferralSuccessOverlay() {
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
@@ -362,7 +364,6 @@
             document.body.appendChild(overlay);
         }
         
-        // Referral Reward Overlay (asks for phone & network)
         function showReferralRewardOverlay() {
             if (hasShownReferralOverlay) return;
             hasShownReferralOverlay = true;
@@ -613,6 +614,18 @@
                         };
                     });
                     
+                    document.getElementById("setCustomAmountBtn").onclick = () => {
+                        const customAmount = parseInt(document.getElementById("customAmount").value);
+                        if (isNaN(customAmount) || customAmount < 400) {
+                            showToast("Please enter a valid amount of ₦400 or more", "error");
+                            return;
+                        }
+                        document.querySelectorAll(".amount-btn").forEach(b => b.classList.remove("selected"));
+                        selectedAmount = customAmount;
+                        document.getElementById("proceedPaymentBtn").classList.add("show");
+                        showToast(`Custom amount ₦${selectedAmount} selected`, "success");
+                    };
+                    
                     document.getElementById("proceedPaymentBtn").onclick = () => {
                         if (!selectedAmount) {
                             showToast("Please select an amount first", "error");
@@ -672,7 +685,7 @@
             if (!selectedAmount) { showToast("Please select an amount", "error"); return; }
             if (!transactionRef) { showToast("Enter transaction reference", "error"); return; }
             
-            showLoadingOverlay("Submitting your funding request... Please wait about 1 minute for admin approval.");
+            showLoadingOverlay("Submitting your funding request... Please wait a moment");
             
             const result = await callAPI('/submit-funding', 'POST', {
                 userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone,
@@ -694,6 +707,7 @@
                 document.getElementById("proceedPaymentBtn").classList.remove("show");
                 document.querySelectorAll(".amount-btn").forEach(b => b.classList.remove("selected"));
                 document.getElementById("fundingTransactionRef").value = "";
+                document.getElementById("customAmount").value = "";
                 selectedAmount = null;
                 await loadAdminData();
             } else {
@@ -710,7 +724,7 @@
             if (!phone || !/^(0[7-9][0-1]{1}[0-9]{8})$/.test(phone)) { showToast("Enter valid phone number", "error"); return; }
             if ((currentUser.wallet_balance || 0) < selectedPlan.price) { showToast("Insufficient wallet balance. Please fund your wallet.", "error"); return; }
             
-            showLoadingOverlay(`Processing your purchase of ${selectedPlan.size}... Please wait about 1 minute for admin approval.`);
+            showLoadingOverlay(`Processing your purchase of ${selectedPlan.size}... Please wait a moment`);
             
             const result = await callAPI('/submit-purchase', 'POST', {
                 userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone,
@@ -852,7 +866,6 @@
         function showToast(msg, type) { const container = document.getElementById("toastContainer"); const toast = document.createElement("div"); toast.className = `toast ${type}`; toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
         function toggleAdminPanel() { const content = document.getElementById("adminContent"); const chevron = document.getElementById("adminChevron"); content.classList.toggle("show"); chevron.style.transform = content.classList.contains("show") ? "rotate(180deg)" : "rotate(0deg)"; }
         
-        // Initialize
         document.addEventListener("DOMContentLoaded", () => { 
             checkExistingSession(); 
         });
