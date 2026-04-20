@@ -55,7 +55,7 @@
         .fund-main-btn:hover { transform: scale(1.02); box-shadow: 0 5px 20px rgba(245,158,11,0.3); }
         
         /* Account Details */
-        .account-details { background: rgba(30,41,59,0.8); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(245,158,11,0.3); }
+        .account-details { background: rgba(30,41,59,0.8); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(245,158,11,0.3); display: none; }
         .account-details p { margin: 10px 0; font-size: 0.9rem; }
         .account-details strong { color: #f59e0b; }
         .copy-account-btn { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.3); padding: 8px 16px; border-radius: 40px; color: #f59e0b; cursor: pointer; width: 100%; margin-top: 10px; }
@@ -144,6 +144,21 @@
         .copy-btn { background: rgba(245,158,11,0.2); border: none; padding: 5px 10px; border-radius: 20px; color: #f59e0b; cursor: pointer; font-size: 0.7rem; margin-left: 10px; }
         .empty-orders { text-align: center; padding: 40px; color: #94a3b8; }
         
+        /* Loading Overlay */
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(16px); z-index: 6000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
+        .loading-card { background: linear-gradient(135deg, #0f1923, #1a1a2e); border: 2px solid #f59e0b; border-radius: 32px; padding: 40px; text-align: center; max-width: 400px; width: 90%; animation: slideUp 0.4s ease; }
+        .loading-spinner { width: 60px; height: 60px; border: 4px solid rgba(245,158,11,0.2); border-top-color: #f59e0b; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-card p { color: #94a3b8; margin-top: 15px; }
+        
+        /* Success Overlay */
+        .success-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(16px); z-index: 6000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
+        .success-card { background: linear-gradient(135deg, #0f1923, #1a1a2e); border: 2px solid #10b981; border-radius: 32px; padding: 40px; text-align: center; max-width: 450px; width: 90%; animation: slideUp 0.4s ease; }
+        .success-card .check-icon { font-size: 80px; color: #10b981; margin-bottom: 20px; animation: bounce 0.6s ease; }
+        .success-card h2 { color: #10b981; font-size: 1.8rem; margin-bottom: 15px; }
+        .success-card p { color: #94a3b8; margin-bottom: 10px; }
+        .success-card button { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; padding: 12px 30px; border-radius: 40px; color: white; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        
         /* Overlays */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); backdrop-filter: blur(16px); z-index: 5000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
         .overlay-card { background: linear-gradient(135deg, #0f1923, #1a1a2e); border: 2px solid #f59e0b; border-radius: 32px; padding: 40px; text-align: center; max-width: 450px; width: 90%; animation: slideUp 0.4s ease; }
@@ -159,12 +174,12 @@
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
         
         .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1100; }
         .toast { background: rgba(15,25,35,0.95); backdrop-filter: blur(12px); padding: 12px 24px; border-radius: 50px; font-size: 0.875rem; display: flex; align-items: center; gap: 8px; animation: slideUp 0.3s ease; }
         .toast.success { border-left: 3px solid #10b981; }
         .toast.error { border-left: 3px solid #ef4444; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .footer { background: rgba(5,5,5,0.9); padding: 40px 24px 20px; text-align: center; }
         .footer p { color: #94a3b8; font-size: 0.8rem; }
         @media (max-width: 768px) { .hero-title { font-size: 2rem; } .plans-grid { grid-template-columns: repeat(2, 1fr); } .pending-item { flex-direction: column; } .item-actions { width: 100%; justify-content: center; } .amount-buttons { justify-content: center; } .payment-methods { flex-direction: column; } }
@@ -188,7 +203,7 @@
                 <button class="fund-main-btn" id="fundMainBtn"><i class="fas fa-plus-circle"></i> Fund Wallet</button>
                 
                 <!-- Account Details -->
-                <div id="accountDetails" class="account-details" style="display: none;">
+                <div id="accountDetails" class="account-details">
                     <p><strong><i class="fas fa-university"></i> Bank:</strong> Moniepoint MFB</p>
                     <p><strong><i class="fas fa-user"></i> Account Name:</strong> Sunday Ijeoma Anastasia</p>
                     <p><strong><i class="fas fa-credit-card"></i> Account Number:</strong> <span id="accountNumber">9066051034</span></p>
@@ -240,7 +255,7 @@
             </div>
 
             <!-- Referral Section -->
-            <div class="referral-section"><div class="referral-header"><i class="fas fa-users"></i><h3>Refer & Earn ₦400 Credit</h3></div><div class="referral-code-box"><span class="referral-code" id="userReferralCode">Loading...</span><button class="copy-referral-btn" onclick="copyReferralCode()">Copy Code</button></div><div class="share-buttons"><button class="share-btn whatsapp" onclick="shareOnWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="share-btn facebook" onclick="shareOnFacebook()"><i class="fab fa-facebook"></i> Facebook</button><button class="share-btn twitter" onclick="shareOnTwitter()"><i class="fab fa-twitter"></i> Twitter</button><button class="share-btn telegram" onclick="shareOnTelegram()"><i class="fab fa-telegram"></i> Telegram</button></div><div class="referral-stats"><div class="referral-stat"><div class="label">Referrals Made</div><div class="value" id="referralCount">0</div></div><div class="referral-stat"><div class="label">Reward Status</div><div class="value" id="referralRewardStatus">5 referrals = ₦400 credit</div></div></div></div>
+            <div class="referral-section"><div class="referral-header"><i class="fas fa-users"></i><h3>Refer & Earn ₦400 Credit</h3></div><div class="referral-code-box"><span class="referral-code" id="userReferralCode">Loading...</span><button class="copy-referral-btn" onclick="copyReferralCode()">Copy Code</button></div><div class="share-buttons"><button class="share-btn whatsapp" onclick="shareOnWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="share-btn facebook" onclick="shareOnFacebook()"><i class="fab fa-facebook"></i> Facebook</button><button class="share-btn twitter" onclick="shareOnTwitter()"><i class="fab fa-twitter"></i> Twitter</button><button class="share-btn telegram" onclick="shareOnTelegram()"><i class="fab fa-telegram"></i> Telegram</button></div><div class="referral-stats"><div class="referral-stat"><div class="label">Referrals Made</div><div class="value" id="referralCount">0</div></div><div class="referral-stat"><div class="label">Reward Status</div><div class="value" id="referralRewardStatus">1 referral = ₦400 credit</div></div></div></div>
         </div>
 
         <!-- Admin Panel -->
@@ -263,10 +278,50 @@
         let pendingReferrals = [];
         let hasShownWelcomeOverlay = false;
         let hasShownReferralOverlay = false;
+        let loadingOverlay = null;
         
-        // Clear any old session data - FRESH START
-        sessionStorage.clear();
-        localStorage.clear();
+        // Check for existing session on page load
+        async function checkExistingSession() {
+            const savedEmail = sessionStorage.getItem('userEmail');
+            if (savedEmail) {
+                await loadDashboard();
+            }
+        }
+        
+        function showLoadingOverlay(message = "Processing... Please wait") {
+            if (loadingOverlay) loadingOverlay.remove();
+            loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'loading-overlay';
+            loadingOverlay.innerHTML = `
+                <div class="loading-card">
+                    <div class="loading-spinner"></div>
+                    <p>${message}</p>
+                    <p style="font-size: 0.7rem; margin-top: 10px;">Waiting for admin approval...</p>
+                </div>
+            `;
+            document.body.appendChild(loadingOverlay);
+        }
+        
+        function hideLoadingOverlay() {
+            if (loadingOverlay) {
+                loadingOverlay.remove();
+                loadingOverlay = null;
+            }
+        }
+        
+        function showSuccessOverlay(title, message, buttonText = "Continue") {
+            const overlay = document.createElement('div');
+            overlay.className = 'success-overlay';
+            overlay.innerHTML = `
+                <div class="success-card">
+                    <div class="check-icon"><i class="fas fa-check-circle"></i></div>
+                    <h2>${title}</h2>
+                    <p>${message}</p>
+                    <button onclick="this.parentElement.parentElement.remove()">${buttonText}</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
         
         async function callAPI(endpoint, method = 'GET', body = null) {
             const options = { method, headers: { 'Content-Type': 'application/json' } };
@@ -279,6 +334,67 @@
                 showToast('Network error. Please check your connection.', 'error');
                 return null;
             }
+        }
+        
+        // Poll for request status (check if admin approved)
+        let statusPollingInterval = null;
+        let currentPendingId = null;
+        let currentPendingType = null;
+        
+        function startStatusPolling(pendingId, type, successTitle, successMessage) {
+            currentPendingId = pendingId;
+            currentPendingType = type;
+            if (statusPollingInterval) clearInterval(statusPollingInterval);
+            
+            statusPollingInterval = setInterval(async () => {
+                let result = null;
+                if (type === 'funding') {
+                    result = await callAPI(`/admin/pending-funding`);
+                    const item = result?.find(p => p.id == pendingId);
+                    if (item && item.status === 'completed') {
+                        clearInterval(statusPollingInterval);
+                        hideLoadingOverlay();
+                        showSuccessOverlay(successTitle, successMessage);
+                        await loadAdminData();
+                        const userData = await callAPI(`/user/${encodeURIComponent(currentUser.email)}`);
+                        if (userData) { currentUser.wallet_balance = userData.wallet_balance; document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`; }
+                    } else if (item && item.status === 'declined') {
+                        clearInterval(statusPollingInterval);
+                        hideLoadingOverlay();
+                        showToast("Your request was declined.", "error");
+                    }
+                } else if (type === 'purchase') {
+                    result = await callAPI(`/admin/pending-purchases`);
+                    const item = result?.find(p => p.id == pendingId);
+                    if (item && item.status === 'completed') {
+                        clearInterval(statusPollingInterval);
+                        hideLoadingOverlay();
+                        showSuccessOverlay(successTitle, successMessage);
+                        await loadAdminData();
+                    } else if (item && item.status === 'declined') {
+                        clearInterval(statusPollingInterval);
+                        hideLoadingOverlay();
+                        showToast("Your purchase was declined. Amount refunded.", "error");
+                        const userData = await callAPI(`/user/${encodeURIComponent(currentUser.email)}`);
+                        if (userData) { currentUser.wallet_balance = userData.wallet_balance; document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`; }
+                    }
+                } else if (type === 'referral') {
+                    result = await callAPI(`/admin/pending-referrals`);
+                    const item = result?.find(r => r.id == pendingId);
+                    if (item && item.status === 'completed') {
+                        clearInterval(statusPollingInterval);
+                        hideLoadingOverlay();
+                        showSuccessOverlay(successTitle, successMessage);
+                        await loadAdminData();
+                        const userData = await callAPI(`/user/${encodeURIComponent(currentUser.email)}`);
+                        if (userData) { currentUser.wallet_balance = userData.wallet_balance; document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`; }
+                    } else if (item && item.status === 'declined') {
+                        clearInterval(statusPollingInterval);
+                        hideLoadingOverlay();
+                        showToast("Your referral reward was declined.", "error");
+                    }
+                }
+            }, 3000);
         }
         
         // ============ WELCOME OVERLAY ============
@@ -320,7 +436,7 @@
                 <div class="overlay-card">
                     <div style="font-size: 60px;">🎉</div>
                     <h2>Congratulations!</h2>
-                    <p>You've successfully referred 5 people!</p>
+                    <p>Someone signed up using your referral code!</p>
                     <p>You've earned <strong style="color: #10b981;">₦400 credit</strong> for your wallet!</p>
                     <div class="network-select" style="margin-bottom: 15px;">
                         <label>Select Your Network to Receive Reward:</label>
@@ -360,6 +476,8 @@
                 return;
             }
             
+            showLoadingOverlay("Submitting your referral reward...");
+            
             const result = await callAPI('/submit-referral-reward', 'POST', {
                 userEmail: currentUser.email,
                 userName: currentUser.name,
@@ -370,9 +488,18 @@
             
             if (result && result.success) {
                 closeReferralRewardOverlay();
-                showToast("Referral reward request sent to admin!", "success");
+                // Get the pending ID from the response or fetch latest
+                const pending = await callAPI('/admin/pending-referrals');
+                const latest = pending?.find(r => r.user_email === currentUser.email && r.status === 'pending');
+                if (latest) {
+                    startStatusPolling(latest.id, 'referral', "Reward Claimed!", "Your ₦400 credit has been added to your wallet!");
+                } else {
+                    hideLoadingOverlay();
+                    showToast("Referral reward request sent to admin!", "success");
+                }
                 await loadAdminData();
             } else {
+                hideLoadingOverlay();
                 showToast("Failed to submit request", "error");
             }
         }
@@ -391,8 +518,10 @@
             const referralCode = document.getElementById("referralCodeInput").value;
             if (!name || !email || !phone || !password) { showToast("Please fill all fields", "error"); return; }
             const result = await callAPI('/signup', 'POST', { name, email, phone, password, referralCode });
-            if (result && result.success) { showToast("Account created! Please login", "success"); showLogin(); }
-            else { showToast(result?.error || "Signup failed", "error"); }
+            if (result && result.success) { 
+                showToast("Account created! Please login", "success"); 
+                showLogin(); 
+            } else { showToast(result?.error || "Signup failed", "error"); }
         }
         
         async function login() {
@@ -406,8 +535,8 @@
                 showToast("Login successful!", "success");
                 await loadDashboard();
                 showWelcomeOverlay();
-                // Check if user has 5+ referrals and hasn't claimed reward
-                if (currentUser.referral_count >= 5 && !currentUser.referral_reward_claimed) {
+                // Check if user has referral reward ready (1 referral = 400 credit)
+                if (currentUser.referral_count >= 1 && !currentUser.referral_reward_claimed) {
                     setTimeout(() => showReferralRewardOverlay(), 1500);
                 }
             } else { showToast(result?.error || "Invalid email or password", "error"); }
@@ -416,19 +545,14 @@
         function logout() {
             currentUser = null;
             sessionStorage.removeItem('userEmail');
-            sessionStorage.clear();
             hasShownWelcomeOverlay = false;
             hasShownReferralOverlay = false;
+            if (statusPollingInterval) clearInterval(statusPollingInterval);
             document.getElementById("authSection").style.display = "flex";
             document.getElementById("dashboardContent").style.display = "none";
             document.getElementById("userInfo").style.display = "none";
             document.getElementById("adminPanel").style.display = "none";
             showLogin();
-            // Reset funding UI
-            document.getElementById("accountDetails").style.display = "none";
-            document.getElementById("amountSection").classList.remove("show");
-            document.getElementById("paymentSection").classList.remove("show");
-            document.getElementById("proceedPaymentBtn").classList.remove("show");
         }
         
         function showLogin() { document.getElementById("loginForm").style.display = "block"; document.getElementById("signupForm").style.display = "none"; }
@@ -448,10 +572,10 @@
                     document.getElementById("userReferralCode").textContent = currentUser.referral_code;
                     document.getElementById("referralCount").textContent = currentUser.referral_count || 0;
                     
-                    if (currentUser.referral_count >= 5 && !currentUser.referral_reward_claimed) {
+                    if (currentUser.referral_count >= 1 && !currentUser.referral_reward_claimed) {
                         document.getElementById("referralRewardStatus").innerHTML = "🎉 Reward Ready! Click to claim 🎉";
                     } else {
-                        document.getElementById("referralRewardStatus").innerHTML = `${5 - (currentUser.referral_count || 0)} more referrals = ₦400 credit`;
+                        document.getElementById("referralRewardStatus").innerHTML = `1 referral = ₦400 credit (You have ${currentUser.referral_count || 0})`;
                     }
                     
                     const adminFlag = document.getElementById("adminFlagBtn");
@@ -560,11 +684,23 @@
             if (!selectedAmount) { showToast("Please select an amount", "error"); return; }
             if (!transactionRef) { showToast("Enter transaction reference", "error"); return; }
             
+            showLoadingOverlay("Submitting your funding request...");
+            
             const result = await callAPI('/submit-funding', 'POST', {
                 userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone,
                 amount: selectedAmount, transactionRef: transactionRef, paymentMethod: selectedFundingMethod
             });
+            
             if (result && result.success) {
+                // Get the pending ID from the response or fetch latest
+                const pending = await callAPI('/admin/pending-funding');
+                const latest = pending?.find(p => p.user_email === currentUser.email && p.status === 'pending');
+                if (latest) {
+                    startStatusPolling(latest.id, 'funding', "Wallet Funded!", `₦${selectedAmount} has been added to your wallet!`);
+                } else {
+                    hideLoadingOverlay();
+                    showToast("Funding request submitted! Admin will verify.", "success");
+                }
                 // Reset UI
                 document.getElementById("accountDetails").style.display = "none";
                 document.getElementById("amountSection").classList.remove("show");
@@ -574,9 +710,11 @@
                 document.getElementById("fundingTransactionRef").value = "";
                 document.getElementById("customAmount").value = "";
                 selectedAmount = null;
-                showToast("Funding request submitted! Admin will verify.", "success");
                 await loadAdminData();
-            } else { showToast("Failed to submit request", "error"); }
+            } else {
+                hideLoadingOverlay();
+                showToast("Failed to submit request", "error");
+            }
         }
         
         // ============ PURCHASE ============
@@ -587,13 +725,23 @@
             if (!phone || !/^(0[7-9][0-1]{1}[0-9]{8})$/.test(phone)) { showToast("Enter valid phone number", "error"); return; }
             if ((currentUser.wallet_balance || 0) < selectedPlan.price) { showToast("Insufficient wallet balance. Please fund your wallet.", "error"); return; }
             
+            showLoadingOverlay("Processing your purchase...");
+            
             const result = await callAPI('/submit-purchase', 'POST', {
                 userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone,
                 network: selectedNetwork, planId: selectedPlan.id, planName: selectedPlan.name,
                 planSize: selectedPlan.size, amount: selectedPlan.price, phoneNumber: phone
             });
+            
             if (result && result.success) {
-                showToast("Purchase request submitted! Admin will verify and send your data.", "success");
+                const pending = await callAPI('/admin/pending-purchases');
+                const latest = pending?.find(p => p.user_email === currentUser.email && p.status === 'pending');
+                if (latest) {
+                    startStatusPolling(latest.id, 'purchase', "Data Purchase Successful!", `Your ${selectedPlan.size} data will be sent to ${phone} shortly!`);
+                } else {
+                    hideLoadingOverlay();
+                    showToast("Purchase request submitted! Admin will verify.", "success");
+                }
                 currentUser.wallet_balance -= selectedPlan.price;
                 document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`;
                 await loadAdminData();
@@ -601,7 +749,10 @@
                 selectedPlan = null;
                 document.getElementById("buyDataBtn").disabled = true;
                 document.getElementById("purchasePhone").value = "";
-            } else { showToast(result?.error || "Purchase failed", "error"); }
+            } else { 
+                hideLoadingOverlay();
+                showToast(result?.error || "Purchase failed", "error"); 
+            }
         }
         
         // ============ ADMIN FUNCTIONS ============
@@ -648,7 +799,7 @@
             if (!container) return;
             const pending = pendingReferrals.filter(r => r.status === "pending");
             if (pending.length === 0) { container.innerHTML = '<div class="empty-orders">No pending referral rewards</div>'; return; }
-            container.innerHTML = pending.map(r => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${r.user_name}</strong></p><p>📧 ${r.user_email}</p><p>📱 Phone: ${r.phone} <button class="copy-btn" onclick="copyToClipboard('${r.phone}')">Copy</button></p><p>📡 Network: ${r.network ? r.network.toUpperCase() : "N/A"}</p><p>🎁 Referral Reward: ₦${r.amount} Credit</p><p>📝 Reason: 5 referrals completed</p><p>⏰ ${r.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approveReferral(${r.id})"><i class="fas fa-check"></i> Credit Sent</button><button class="decline-btn" onclick="declineReferral(${r.id})"><i class="fas fa-times"></i> Decline</button></div></div>`).join("");
+            container.innerHTML = pending.map(r => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${r.user_name}</strong></p><p>📧 ${r.user_email}</p><p>📱 Phone: ${r.phone} <button class="copy-btn" onclick="copyToClipboard('${r.phone}')">Copy</button></p><p>📡 Network: ${r.network ? r.network.toUpperCase() : "N/A"}</p><p>🎁 Referral Reward: ₦${r.amount} Credit</p><p>📝 1 referral completed</p><p>⏰ ${r.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approveReferral(${r.id})"><i class="fas fa-check"></i> Credit Sent</button><button class="decline-btn" onclick="declineReferral(${r.id})"><i class="fas fa-times"></i> Decline</button></div></div>`).join("");
         }
         
         async function approveFunding(id) {
@@ -716,10 +867,9 @@
         function showToast(msg, type) { const container = document.getElementById("toastContainer"); const toast = document.createElement("div"); toast.className = `toast ${type}`; toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
         function toggleAdminPanel() { const content = document.getElementById("adminContent"); const chevron = document.getElementById("adminChevron"); content.classList.toggle("show"); chevron.style.transform = content.classList.contains("show") ? "rotate(180deg)" : "rotate(0deg)"; }
         
+        // Initialize - check for existing session on page load
         document.addEventListener("DOMContentLoaded", () => { 
-            sessionStorage.clear();
-            localStorage.clear();
-            loadDashboard(); 
+            checkExistingSession(); 
         });
     </script>
 </body>
