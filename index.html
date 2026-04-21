@@ -43,6 +43,14 @@
         .input-group:focus-within { border-color: #f59e0b; transform: scale(1.02); }
         .input-group i { color: #94a3b8; font-size: 18px; }
         .input-group input { width: 100%; padding: 18px 16px; background: transparent; border: none; color: white; font-size: 1rem; outline: none; }
+        /* Prevent autofill background */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px rgba(30,41,59,0.6) inset !important;
+            -webkit-text-fill-color: white !important;
+        }
         .buy-btn { width: 100%; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; padding: 18px; border-radius: 60px; color: white; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; }
         .buy-btn:hover { transform: scale(1.02); box-shadow: 0 5px 20px rgba(245,158,11,0.3); }
         .auth-switch { margin-top: 20px; color: #94a3b8; }
@@ -212,17 +220,17 @@
             <h1 class="hero-title">Buy Cheap Data<br><span class="gradient-text">All Networks</span></h1>
             <p class="hero-subtitle">Fund your wallet, buy data bundles at the best prices!</p>
             <div id="loginForm" class="auth-form">
-                <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" placeholder="Email address"></div>
-                <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPassword" placeholder="Password"></div>
+                <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" placeholder="Email address" autocomplete="off"></div>
+                <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPassword" placeholder="Password" autocomplete="off"></div>
                 <button class="buy-btn" onclick="login()">Login <i class="fas fa-arrow-right"></i></button>
                 <div class="auth-switch">Don't have an account? <a onclick="showSignup()">Sign up</a></div>
             </div>
             <div id="signupForm" class="auth-form" style="display: none;">
-                <div class="input-group"><i class="fas fa-user"></i><input type="text" id="signupName" placeholder="Full name"></div>
-                <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="signupEmail" placeholder="Email address"></div>
-                <div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="signupPhone" placeholder="Phone number"></div>
-                <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="signupPassword" placeholder="Password (min 4 chars)"></div>
-                <div class="input-group"><i class="fas fa-gift"></i><input type="text" id="referralCodeInput" placeholder="Referral code (optional)"></div>
+                <div class="input-group"><i class="fas fa-user"></i><input type="text" id="signupName" placeholder="Full name" autocomplete="off"></div>
+                <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="signupEmail" placeholder="Email address" autocomplete="off"></div>
+                <div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="signupPhone" placeholder="Phone number" autocomplete="off"></div>
+                <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="signupPassword" placeholder="Password (min 4 chars)" autocomplete="off"></div>
+                <div class="input-group"><i class="fas fa-gift"></i><input type="text" id="referralCodeInput" placeholder="Referral code (optional)" autocomplete="off"></div>
                 <button class="buy-btn" onclick="signup()">Create Account <i class="fas fa-user-plus"></i></button>
                 <div class="auth-switch">Already have an account? <a onclick="showLogin()">Login</a></div>
             </div>
@@ -341,8 +349,28 @@
 
     <script>
         // ============================================
-        // NO LOADING OVERLAY ON LOGIN - INSTANT RESPONSE
+        // COMPLETE FRESH START - NO ONE IS LOGGED IN
         // ============================================
+        
+        // FORCE CLEAR EVERYTHING on every page load
+        sessionStorage.clear();
+        localStorage.clear();
+        
+        // Clear all cookies
+        document.cookie.split(";").forEach(function(c) { 
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        
+        // Clear form fields manually
+        window.addEventListener('load', function() {
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('signupName').value = '';
+            document.getElementById('signupEmail').value = '';
+            document.getElementById('signupPhone').value = '';
+            document.getElementById('signupPassword').value = '';
+            document.getElementById('referralCodeInput').value = '';
+        });
         
         const API_URL = 'https://onslot.onrender.com/api';
         const SERVICE_CHARGE = 50;
@@ -559,7 +587,7 @@
             }
         }
         
-        // ============ AUTH - NO LOADING OVERLAY ============
+        // ============ AUTH ============
         async function signup() {
             const name = document.getElementById("signupName").value.trim();
             const email = document.getElementById("signupEmail").value.trim().toLowerCase();
@@ -576,7 +604,10 @@
                 return;
             }
             
+            showLoadingOverlay("Creating account...");
             const result = await callAPI('/signup', 'POST', { name, email, phone, password, referralCode });
+            hideLoadingOverlay();
+            
             if (result?.success) {
                 showToast("Account created! Please login", "success");
                 showLogin();
@@ -590,7 +621,6 @@
             }
         }
         
-        // LOGIN FUNCTION - NO LOADING OVERLAY, INSTANT RESPONSE
         async function login() {
             const email = document.getElementById("loginEmail").value.trim().toLowerCase();
             const password = document.getElementById("loginPassword").value;
@@ -600,7 +630,6 @@
                 return;
             }
             
-            // Direct API call - no loading overlay
             const result = await callAPI('/login', 'POST', { email, password });
             
             if (result?.success) {
@@ -634,8 +663,24 @@
             showToast("Logged out", "success");
         }
         
-        function showLogin() { document.getElementById("loginForm").style.display = "block"; document.getElementById("signupForm").style.display = "none"; }
-        function showSignup() { document.getElementById("loginForm").style.display = "none"; document.getElementById("signupForm").style.display = "block"; }
+        function showLogin() { 
+            document.getElementById("loginForm").style.display = "block"; 
+            document.getElementById("signupForm").style.display = "none";
+            // Clear login form fields
+            document.getElementById("loginEmail").value = "";
+            document.getElementById("loginPassword").value = "";
+        }
+        
+        function showSignup() { 
+            document.getElementById("loginForm").style.display = "none"; 
+            document.getElementById("signupForm").style.display = "block";
+            // Clear signup form fields
+            document.getElementById("signupName").value = "";
+            document.getElementById("signupEmail").value = "";
+            document.getElementById("signupPhone").value = "";
+            document.getElementById("signupPassword").value = "";
+            document.getElementById("referralCodeInput").value = "";
+        }
         
         async function loadDashboard() {
             const savedEmail = sessionStorage.getItem('userEmail');
@@ -673,7 +718,12 @@
                     
                     setupEventListeners();
                     selectNetwork('mtn');
+                } else {
+                    sessionStorage.removeItem('userEmail');
+                    showLogin();
                 }
+            } else {
+                showLogin();
             }
         }
         
@@ -954,10 +1004,28 @@
             }
         }
         
+        // Initialize - ALWAYS show login page first, NO auto-login
         document.addEventListener("DOMContentLoaded", () => {
+            // Triple clear to be safe
+            sessionStorage.clear();
+            localStorage.clear();
+            
+            // Clear all cookies
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            
+            // Force show login form
             showLogin();
-            const saved = sessionStorage.getItem('userEmail');
-            if (saved) loadDashboard();
+            
+            // Clear all input fields
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('signupName').value = '';
+            document.getElementById('signupEmail').value = '';
+            document.getElementById('signupPhone').value = '';
+            document.getElementById('signupPassword').value = '';
+            document.getElementById('referralCodeInput').value = '';
         });
     </script>
 </body>
