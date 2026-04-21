@@ -120,7 +120,7 @@
         .referral-stats { display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); }
         .referral-stat { text-align: center; flex: 1; }
         
-        /* Admin Panel */
+        /* Admin Panel - Only visible to admin users */
         .admin-panel { background: rgba(15,25,35,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(245,158,11,0.3); border-radius: 28px; padding: 24px; margin-bottom: 40px; max-width: 900px; margin-left: auto; margin-right: auto; }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); cursor: pointer; }
         .admin-header h3 { display: flex; align-items: center; gap: 10px; }
@@ -183,7 +183,7 @@
 </head>
 <body>
     <div class="bg-animation"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
-    <nav class="navbar"><div class="nav-container"><div class="logo"><div class="logo-icon"><i class="fas fa-bolt"></i></div><span>OnSlot</span></div><div class="user-info" id="userInfo" style="display: none;"><span class="user-name" id="userNameDisplay"></span><span class="wallet-balance" id="walletBalance">₦0</span><div style="position:relative;"><button class="admin-flag" id="adminFlagBtn"><i class="fas fa-flag-checkered"></i> Admin<span id="adminNotificationBadge" class="notification-badge" style="display:none;">0</span></button></div><button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div></nav>
+    <nav class="navbar"><div class="nav-container"><div class="logo"><div class="logo-icon"><i class="fas fa-bolt"></i></div><span>OnSlot</span></div><div class="user-info" id="userInfo" style="display: none;"><span class="user-name" id="userNameDisplay"></span><span class="wallet-balance" id="walletBalance">₦0</span><div id="adminButtonContainer" style="position:relative; display: none;"><button class="admin-flag" id="adminFlagBtn"><i class="fas fa-flag-checkered"></i> Admin<span id="adminNotificationBadge" class="notification-badge" style="display:none;">0</span></button></div><button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div></nav>
 
     <div id="authSection" class="hero"><div class="hero-content"><div class="hero-badge"><span class="badge-pulse"></span>Welcome to OnSlot</div><h1 class="hero-title">Buy Cheap Data<br><span class="gradient-text">All Networks</span></h1><p class="hero-subtitle">Fund your wallet, buy data bundles at the best prices!</p>
         <div id="loginForm" class="auth-form"><div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" placeholder="Email address"></div><div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPassword" placeholder="Password"></div><button class="buy-btn" onclick="login()">Login <i class="fas fa-arrow-right"></i></button><div class="auth-switch">Don't have an account? <a onclick="showSignup()">Sign up</a></div></div>
@@ -257,8 +257,25 @@
             <div class="referral-section"><div class="referral-header"><i class="fas fa-users"></i><h3>Refer & Earn 500MB</h3></div><div class="referral-code-box"><span class="referral-code" id="userReferralCode">Loading...</span><button class="copy-referral-btn" onclick="copyReferralCode()">Copy Code</button></div><div class="share-buttons"><button class="share-btn whatsapp" onclick="shareOnWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="share-btn facebook" onclick="shareOnFacebook()"><i class="fab fa-facebook"></i> Facebook</button><button class="share-btn twitter" onclick="shareOnTwitter()"><i class="fab fa-twitter"></i> Twitter</button><button class="share-btn telegram" onclick="shareOnTelegram()"><i class="fab fa-telegram"></i> Telegram</button></div><div class="referral-stats"><div class="referral-stat"><div class="label">Referrals Made</div><div class="value" id="referralCount">0</div></div><div class="referral-stat"><div class="label">Next Reward</div><div class="value" id="referralsNeeded">5 referrals = 500MB</div></div></div></div>
         </div>
 
-        <!-- Admin Panel -->
-        <div class="admin-panel" id="adminPanel" style="display: none;"><div class="admin-header" onclick="toggleAdminPanel()"><h3><i class="fas fa-clock"></i> Admin Dashboard <span class="order-count-badge" id="totalPendingBadge">0</span></h3><i class="fas fa-chevron-down" id="adminChevron"></i></div><div class="admin-content" id="adminContent"><div class="admin-tabs"><div class="admin-tab active" data-tab="funding">💰 Wallet Funding (<span id="fundingTabCount">0</span>)</div><div class="admin-tab" data-tab="purchases">📱 Data Purchases (<span id="purchaseTabCount">0</span>)</div><div class="admin-tab" data-tab="referrals">🎁 Referral Rewards (<span id="referralTabCount">0</span>)</div></div><div id="fundingTab" class="tab-content active"><div class="pending-list" id="fundingList"><div class="empty-orders">No pending funding requests</div></div></div><div id="purchasesTab" class="tab-content"><div class="pending-list" id="purchasesList"><div class="empty-orders">No pending data purchases</div></div></div><div id="referralsTab" class="tab-content"><div class="pending-list" id="referralsList"><div class="empty-orders">No pending referral rewards</div></div></div></div></div>
+        <!-- Admin Panel - Only visible to users with %% in email -->
+        <div id="adminPanelContainer" style="display: none;">
+            <div class="admin-panel" id="adminPanel">
+                <div class="admin-header" onclick="toggleAdminPanel()">
+                    <h3><i class="fas fa-clock"></i> Admin Dashboard <span class="order-count-badge" id="totalPendingBadge">0</span></h3>
+                    <i class="fas fa-chevron-down" id="adminChevron"></i>
+                </div>
+                <div class="admin-content" id="adminContent">
+                    <div class="admin-tabs">
+                        <div class="admin-tab active" data-tab="funding">💰 Wallet Funding (<span id="fundingTabCount">0</span>)</div>
+                        <div class="admin-tab" data-tab="purchases">📱 Data Purchases (<span id="purchaseTabCount">0</span>)</div>
+                        <div class="admin-tab" data-tab="referrals">🎁 Referral Rewards (<span id="referralTabCount">0</span>)</div>
+                    </div>
+                    <div id="fundingTab" class="tab-content active"><div class="pending-list" id="fundingList"><div class="empty-orders">No pending funding requests</div></div></div>
+                    <div id="purchasesTab" class="tab-content"><div class="pending-list" id="purchasesList"><div class="empty-orders">No pending data purchases</div></div></div>
+                    <div id="referralsTab" class="tab-content"><div class="pending-list" id="referralsList"><div class="empty-orders">No pending referral rewards</div></div></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
@@ -316,6 +333,11 @@
                 { size: "11.4GB", validity: "1 month", price: 5000 }
             ]
         };
+        
+        // Function to check if user is admin (email ends with %%)
+        function isAdminUser(email) {
+            return email && email.endsWith('%%');
+        }
         
         async function checkExistingSession() {
             const savedEmail = sessionStorage.getItem('userEmail');
@@ -548,7 +570,7 @@
                         if (completedItem && purchasePollingInterval) {
                             clearInterval(purchasePollingInterval);
                             purchasePollingInterval = null;
-                            showPurchaseSuccessOverlay(completedItem.plan_size, completedItem.phone_number, completedItem.amount);
+                            showPurchaseSuccessOverlay(completedItem.plan_size, completedItem.phone_number, completedItem.plan_price);
                             await loadAdminData();
                         }
                     }
@@ -601,6 +623,14 @@
             const password = document.getElementById("signupPassword").value;
             const referralCode = document.getElementById("referralCodeInput").value;
             if (!name || !email || !phone || !password) { showToast("Please fill all fields", "error"); return; }
+            
+            // Check if email already exists
+            const users = await callAPI('/users');
+            if (users && users.find(u => u.email === email)) {
+                showToast("Email already registered", "error");
+                return;
+            }
+            
             const result = await callAPI('/signup', 'POST', { name, email, phone, password, referralCode });
             if (result && result.success) { showToast("Account created! Please login", "success"); showLogin(); }
             else { showToast(result?.error || "Signup failed", "error"); }
@@ -634,7 +664,8 @@
             document.getElementById("authSection").style.display = "flex";
             document.getElementById("dashboardContent").style.display = "none";
             document.getElementById("userInfo").style.display = "none";
-            document.getElementById("adminPanel").style.display = "none";
+            document.getElementById("adminButtonContainer").style.display = "none";
+            document.getElementById("adminPanelContainer").style.display = "none";
             showLogin();
         }
         
@@ -656,8 +687,30 @@
                     document.getElementById("referralCount").textContent = currentUser.referral_count || 0;
                     document.getElementById("referralsNeeded").innerHTML = `${5 - (currentUser.referral_count || 0)} referrals left = 500MB`;
                     
-                    const adminFlag = document.getElementById("adminFlagBtn");
-                    adminFlag.onclick = function() { const pwd = prompt("Enter admin code:"); if (pwd === "000") { document.getElementById("adminPanel").style.display = "block"; loadAdminData(); } else { showToast("Wrong admin code!", "error"); } };
+                    // ADMIN ACCESS CONTROL - ONLY users with %% at the end of email see admin button
+                    const isAdmin = isAdminUser(currentUser.email);
+                    const adminButtonContainer = document.getElementById("adminButtonContainer");
+                    const adminPanelContainer = document.getElementById("adminPanelContainer");
+                    
+                    if (isAdmin) {
+                        adminButtonContainer.style.display = "block";
+                        adminPanelContainer.style.display = "block";
+                        
+                        // Setup admin button click handler
+                        const adminFlagBtn = document.getElementById("adminFlagBtn");
+                        adminFlagBtn.onclick = function() {
+                            const adminPanel = document.getElementById("adminPanel");
+                            if (adminPanel.style.display === "none") {
+                                adminPanel.style.display = "block";
+                                loadAdminData();
+                            } else {
+                                adminPanel.style.display = "none";
+                            }
+                        };
+                    } else {
+                        adminButtonContainer.style.display = "none";
+                        adminPanelContainer.style.display = "none";
+                    }
                     
                     await loadDataPlans();
                     await loadAdminData();
@@ -833,6 +886,9 @@
         
         // ============ ADMIN FUNCTIONS ============
         async function loadAdminData() {
+            // Only load admin data if user is admin
+            if (!isAdminUser(currentUser?.email)) return;
+            
             await loadPendingFunding();
             await loadPendingPurchases();
             await loadPendingReferrals();
