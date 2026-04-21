@@ -618,23 +618,22 @@
             if (result && result.success) { showToast("Account created! Please login", "success"); showLogin(); }
             else { showToast(result?.error || "Signup failed", "error"); }
         }
-        
-        async function login() {
-            const email = document.getElementById("loginEmail").value;
-            const password = document.getElementById("loginPassword").value;
-            if (!email || !password) { showToast("Please enter email and password", "error"); return; }
-            const result = await callAPI('/login', 'POST', { email, password });
-            if (result && result.success) {
-                currentUser = result.user;
-                sessionStorage.setItem('userEmail', currentUser.email);
-                showToast("Login successful!", "success");
-                await loadDashboard();
-                showWelcomeOverlay();
-                if (currentUser.referral_count >= 5 && !currentUser.referral_reward_claimed) {
-                    setTimeout(() => showReferralRewardOverlay(), 1500);
-                }
-            } else { showToast(result?.error || "Invalid email or password", "error"); }
+      async function login() {
+    const email = document.getElementById("loginEmail").value.toLowerCase().trim(); // ✅ Add .toLowerCase()
+    const password = document.getElementById("loginPassword").value;
+    if (!email || !password) { showToast("Please enter email and password", "error"); return; }
+    const result = await callAPI('/login', 'POST', { email, password });
+    if (result && result.success) {
+        currentUser = result.user;
+        sessionStorage.setItem('userEmail', currentUser.email);
+        showToast("Login successful!", "success");
+        await loadDashboard();
+        showWelcomeOverlay();
+        if (currentUser.referral_count >= 5 && !currentUser.referral_reward_claimed) {
+            setTimeout(() => showReferralRewardOverlay(), 1500);
         }
+    } else { showToast(result?.error || "Invalid email or password", "error"); }
+}
         
         function logout() {
             currentUser = null;
