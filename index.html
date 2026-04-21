@@ -608,7 +608,7 @@
         // ============ AUTH ============
         async function signup() {
             const name = document.getElementById("signupName").value;
-            const email = document.getElementById("signupEmail").value;
+            const email = document.getElementById("signupEmail").value.toLowerCase().trim();
             const phone = document.getElementById("signupPhone").value;
             const password = document.getElementById("signupPassword").value;
             const referralCode = document.getElementById("referralCodeInput").value;
@@ -618,22 +618,23 @@
             if (result && result.success) { showToast("Account created! Please login", "success"); showLogin(); }
             else { showToast(result?.error || "Signup failed", "error"); }
         }
-      async function login() {
-    const email = document.getElementById("loginEmail").value.toLowerCase().trim(); // ✅ Add .toLowerCase()
-    const password = document.getElementById("loginPassword").value;
-    if (!email || !password) { showToast("Please enter email and password", "error"); return; }
-    const result = await callAPI('/login', 'POST', { email, password });
-    if (result && result.success) {
-        currentUser = result.user;
-        sessionStorage.setItem('userEmail', currentUser.email);
-        showToast("Login successful!", "success");
-        await loadDashboard();
-        showWelcomeOverlay();
-        if (currentUser.referral_count >= 5 && !currentUser.referral_reward_claimed) {
-            setTimeout(() => showReferralRewardOverlay(), 1500);
+        
+        async function login() {
+            const email = document.getElementById("loginEmail").value.toLowerCase().trim();
+            const password = document.getElementById("loginPassword").value;
+            if (!email || !password) { showToast("Please enter email and password", "error"); return; }
+            const result = await callAPI('/login', 'POST', { email, password });
+            if (result && result.success) {
+                currentUser = result.user;
+                sessionStorage.setItem('userEmail', currentUser.email);
+                showToast("Login successful!", "success");
+                await loadDashboard();
+                showWelcomeOverlay();
+                if (currentUser.referral_count >= 5 && !currentUser.referral_reward_claimed) {
+                    setTimeout(() => showReferralRewardOverlay(), 1500);
+                }
+            } else { showToast(result?.error || "Invalid email or password", "error"); }
         }
-    } else { showToast(result?.error || "Invalid email or password", "error"); }
-}
         
         function logout() {
             currentUser = null;
@@ -965,14 +966,6 @@
             document.getElementById("purchaseTabCount").textContent = pendingPurchasesCount;
             document.getElementById("referralTabCount").textContent = pendingReferralsCount;
         }
-        async function signup() {
-    const name = document.getElementById("signupName").value;
-    const email = document.getElementById("signupEmail").value.toLowerCase().trim(); // ✅ Add .toLowerCase().trim()
-    const phone = document.getElementById("signupPhone").value;
-    const password = document.getElementById("signupPassword").value;
-    const referralCode = document.getElementById("referralCodeInput").value;
-    // ... rest of the function
-}
         
         // ============ REFERRAL SHARING ============
         function getReferralMessage() { return `Join OnSlot and buy cheap data! Use my code: ${currentUser.referral_code}\n\nhttps://onslot-frontend.onrender.com`; }
