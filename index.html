@@ -337,9 +337,34 @@
             ]
         };
         
-        function isAdminUser(email) {
-            return email && email.endsWith('%%');
+       // Function that checks if user is admin (email ends with %%)
+function isAdminUser(email) {
+    return email && email.endsWith('%%');
+}
+
+// In loadDashboard() - Only shows admin button if email ends with %%
+const isAdmin = isAdminUser(currentUser.email);
+const adminButtonContainer = document.getElementById("adminButtonContainer");
+const adminPanelContainer = document.getElementById("adminPanelContainer");
+
+if (isAdmin) {
+    adminButtonContainer.style.display = "block";
+    adminPanelContainer.style.display = "block";
+    // Setup admin button click handler
+    const adminFlagBtn = document.getElementById("adminFlagBtn");
+    adminFlagBtn.onclick = function() {
+        const adminPanel = document.getElementById("adminPanel");
+        if (adminPanel.style.display === "none") {
+            adminPanel.style.display = "block";
+            loadAdminData();
+        } else {
+            adminPanel.style.display = "none";
         }
+    };
+} else {
+    adminButtonContainer.style.display = "none";
+    adminPanelContainer.style.display = "none";
+}
         
         // ============ OVERLAY FUNCTIONS ============
         
