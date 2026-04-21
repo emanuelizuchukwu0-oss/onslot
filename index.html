@@ -183,7 +183,7 @@
 </head>
 <body>
     <div class="bg-animation"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
-    <nav class="navbar"><div class="nav-container"><div class="logo"><div class="logo-icon"><i class="fas fa-bolt"></i></div><span>OnSlot</span></div><div class="user-info" id="userInfo" style="display: none;"><span class="user-name" id="userNameDisplay"></span><span class="wallet-balance" id="walletBalance">₦0</span><div style="position:relative;"><button class="admin-flag" id="adminFlagBtn"><i class="fas fa-flag-checkered"></i> Admin<span id="adminNotificationBadge" class="notification-badge" style="display:none;">0</span></button></div><button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div></nav>
+    <nav class="navbar"><div class="nav-container"><div class="logo"><div class="logo-icon"><i class="fas fa-bolt"></i></div><span>OnSlot</span></div><div class="user-info" id="userInfo" style="display: none;"><span class="user-name" id="userNameDisplay"></span><span class="wallet-balance" id="walletBalance">₦0</span><div id="adminButtonContainer" style="position:relative; display: none;"><button class="admin-flag" id="adminFlagBtn"><i class="fas fa-flag-checkered"></i> Admin<span id="adminNotificationBadge" class="notification-badge" style="display:none;">0</span></button></div><button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div></nav>
 
     <div id="authSection" class="hero"><div class="hero-content"><div class="hero-badge"><span class="badge-pulse"></span>Welcome to OnSlot</div><h1 class="hero-title">Buy Cheap Data<br><span class="gradient-text">All Networks</span></h1><p class="hero-subtitle">Fund your wallet, buy data bundles at the best prices!</p>
         <div id="loginForm" class="auth-form"><div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" placeholder="Email address"></div><div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPassword" placeholder="Password"></div><button class="buy-btn" onclick="login()">Login <i class="fas fa-arrow-right"></i></button><div class="auth-switch">Don't have an account? <a onclick="showSignup()">Sign up</a></div></div>
@@ -257,14 +257,35 @@
             <div class="referral-section"><div class="referral-header"><i class="fas fa-users"></i><h3>Refer & Earn 500MB</h3></div><div class="referral-code-box"><span class="referral-code" id="userReferralCode">Loading...</span><button class="copy-referral-btn" onclick="copyReferralCode()">Copy Code</button></div><div class="share-buttons"><button class="share-btn whatsapp" onclick="shareOnWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="share-btn facebook" onclick="shareOnFacebook()"><i class="fab fa-facebook"></i> Facebook</button><button class="share-btn twitter" onclick="shareOnTwitter()"><i class="fab fa-twitter"></i> Twitter</button><button class="share-btn telegram" onclick="shareOnTelegram()"><i class="fab fa-telegram"></i> Telegram</button></div><div class="referral-stats"><div class="referral-stat"><div class="label">Referrals Made</div><div class="value" id="referralCount">0</div></div><div class="referral-stat"><div class="label">Next Reward</div><div class="value" id="referralsNeeded">5 referrals = 500MB</div></div></div></div>
         </div>
 
-        <!-- Admin Panel -->
-        <div class="admin-panel" id="adminPanel" style="display: none;"><div class="admin-header" onclick="toggleAdminPanel()"><h3><i class="fas fa-clock"></i> Admin Dashboard <span class="order-count-badge" id="totalPendingBadge">0</span></h3><i class="fas fa-chevron-down" id="adminChevron"></i></div><div class="admin-content" id="adminContent"><div class="admin-tabs"><div class="admin-tab active" data-tab="funding">💰 Wallet Funding (<span id="fundingTabCount">0</span>)</div><div class="admin-tab" data-tab="purchases">📱 Data Purchases (<span id="purchaseTabCount">0</span>)</div><div class="admin-tab" data-tab="referrals">🎁 Referral Rewards (<span id="referralTabCount">0</span>)</div></div><div id="fundingTab" class="tab-content active"><div class="pending-list" id="fundingList"><div class="empty-orders">No pending funding requests</div></div></div><div id="purchasesTab" class="tab-content"><div class="pending-list" id="purchasesList"><div class="empty-orders">No pending data purchases</div></div></div><div id="referralsTab" class="tab-content"><div class="pending-list" id="referralsList"><div class="empty-orders">No pending referral rewards</div></div></div></div></div>
+        <!-- Admin Panel - Only visible to users with %% in email -->
+        <div id="adminPanelContainer" style="display: none;">
+            <div class="admin-panel" id="adminPanel">
+                <div class="admin-header" onclick="toggleAdminPanel()">
+                    <h3><i class="fas fa-clock"></i> Admin Dashboard <span class="order-count-badge" id="totalPendingBadge">0</span></h3>
+                    <i class="fas fa-chevron-down" id="adminChevron"></i>
+                </div>
+                <div class="admin-content" id="adminContent">
+                    <div class="admin-tabs">
+                        <div class="admin-tab active" data-tab="funding">💰 Wallet Funding (<span id="fundingTabCount">0</span>)</div>
+                        <div class="admin-tab" data-tab="purchases">📱 Data Purchases (<span id="purchaseTabCount">0</span>)</div>
+                        <div class="admin-tab" data-tab="referrals">🎁 Referral Rewards (<span id="referralTabCount">0</span>)</div>
+                    </div>
+                    <div id="fundingTab" class="tab-content active"><div class="pending-list" id="fundingList"><div class="empty-orders">No pending funding requests</div></div></div>
+                    <div id="purchasesTab" class="tab-content"><div class="pending-list" id="purchasesList"><div class="empty-orders">No pending data purchases</div></div></div>
+                    <div id="referralsTab" class="tab-content"><div class="pending-list" id="referralsList"><div class="empty-orders">No pending referral rewards</div></div></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
     <footer class="footer"><p>&copy; 2024 OnSlot. All rights reserved. | Buy Cheap Data</p></footer>
 
     <script>
+        // ============================================
+        // FIXED: Admin detection based on email ending with %%
+        // ============================================
+        
         const API_URL = 'https://onslot.onrender.com/api';
         const SERVICE_CHARGE = 50;
         let currentUser = null;
@@ -317,14 +338,12 @@
             ]
         };
         
-        async function checkExistingSession() {
-            const savedEmail = sessionStorage.getItem('userEmail');
-            if (savedEmail) {
-                await loadDashboard();
-            }
+        // FIXED: Check if user is admin (email ends with %%)
+        function isAdminUser(email) {
+            return email && email.endsWith('%%');
         }
         
-        // ============ OVERLAY FUNCTIONS ============
+        // ============ OVERLAY FUNCTIONS (ALL KEPT) ============
         
         function showWelcomeOverlay() {
             if (hasShownWelcomeOverlay) return;
@@ -375,18 +394,15 @@
             const existing = document.querySelector('.success-overlay');
             if (existing) existing.remove();
             
-            const totalWithCharge = amount;
-            const charge = SERVICE_CHARGE;
-            
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
             overlay.innerHTML = `
                 <div class="success-card">
                     <div class="check-icon"><i class="fas fa-check-circle"></i></div>
                     <h2>Wallet Funded! 🎉</h2>
-                    <p>Your wallet has been successfully credited with <strong style="color: #10b981;">₦${totalWithCharge}</strong>!</p>
+                    <p>Your wallet has been successfully credited with <strong style="color: #10b981;">₦${amount}</strong>!</p>
                     <p style="background: rgba(245,158,11,0.1); padding: 10px; border-radius: 8px; margin-top: 10px;">
-                        <i class="fas fa-receipt"></i> Service Charge: <strong>₦${charge}</strong>
+                        <i class="fas fa-receipt"></i> Service Charge: <strong>₦${SERVICE_CHARGE}</strong>
                     </p>
                     <p>You can now use your balance to buy data bundles.</p>
                     <button onclick="this.parentElement.parentElement.remove()">Continue</button>
@@ -399,8 +415,7 @@
             const existing = document.querySelector('.success-overlay');
             if (existing) existing.remove();
             
-            const charge = SERVICE_CHARGE;
-            const total = planPrice + charge;
+            const total = planPrice + SERVICE_CHARGE;
             
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
@@ -410,7 +425,7 @@
                     <h2>Purchase Successful! 🎉</h2>
                     <p>Your <strong style="color: #f59e0b;">${planSize}</strong> data has been sent to <strong style="color: #10b981;">${phoneNumber}</strong>!</p>
                     <p style="background: rgba(245,158,11,0.1); padding: 10px; border-radius: 8px; margin-top: 10px;">
-                        <i class="fas fa-receipt"></i> Plan Cost: ₦${planPrice} | Service Charge: ₦${charge} | Total: ₦${total}
+                        <i class="fas fa-receipt"></i> Plan Cost: ₦${planPrice} | Service Charge: ₦${SERVICE_CHARGE} | Total: ₦${total}
                     </p>
                     <p>You should receive it shortly.</p>
                     <button onclick="this.parentElement.parentElement.remove()">Continue</button>
@@ -510,7 +525,7 @@
             }
         }
         
-        // ============ POLLING FUNCTIONS ============
+        // ============ POLLING FUNCTIONS (ALL KEPT) ============
         
         function startFundingPolling() {
             if (fundingPollingInterval) clearInterval(fundingPollingInterval);
@@ -520,8 +535,7 @@
                 if (result) {
                     const pendingItem = result.find(p => p.user_email === currentUser?.email && p.status === 'pending');
                     if (!pendingItem) {
-                        const allItems = result;
-                        const completedItem = allItems.find(p => p.user_email === currentUser?.email && p.status === 'completed');
+                        const completedItem = result.find(p => p.user_email === currentUser?.email && p.status === 'completed');
                         if (completedItem && fundingPollingInterval) {
                             clearInterval(fundingPollingInterval);
                             fundingPollingInterval = null;
@@ -543,12 +557,11 @@
                 if (result) {
                     const pendingItem = result.find(p => p.user_email === currentUser?.email && p.status === 'pending');
                     if (!pendingItem) {
-                        const allItems = result;
-                        const completedItem = allItems.find(p => p.user_email === currentUser?.email && p.status === 'completed');
+                        const completedItem = result.find(p => p.user_email === currentUser?.email && p.status === 'completed');
                         if (completedItem && purchasePollingInterval) {
                             clearInterval(purchasePollingInterval);
                             purchasePollingInterval = null;
-                            showPurchaseSuccessOverlay(completedItem.plan_size, completedItem.phone_number, completedItem.amount);
+                            showPurchaseSuccessOverlay(completedItem.plan_size, completedItem.phone_number, completedItem.plan_price);
                             await loadAdminData();
                         }
                     }
@@ -564,8 +577,7 @@
                 if (result) {
                     const pendingItem = result.find(r => r.user_email === currentUser?.email && r.status === 'pending');
                     if (!pendingItem) {
-                        const allItems = result;
-                        const completedItem = allItems.find(r => r.user_email === currentUser?.email && r.status === 'completed');
+                        const completedItem = result.find(r => r.user_email === currentUser?.email && r.status === 'completed');
                         if (completedItem && referralPollingInterval) {
                             clearInterval(referralPollingInterval);
                             referralPollingInterval = null;
@@ -601,6 +613,7 @@
             const password = document.getElementById("signupPassword").value;
             const referralCode = document.getElementById("referralCodeInput").value;
             if (!name || !email || !phone || !password) { showToast("Please fill all fields", "error"); return; }
+            
             const result = await callAPI('/signup', 'POST', { name, email, phone, password, referralCode });
             if (result && result.success) { showToast("Account created! Please login", "success"); showLogin(); }
             else { showToast(result?.error || "Signup failed", "error"); }
@@ -634,7 +647,8 @@
             document.getElementById("authSection").style.display = "flex";
             document.getElementById("dashboardContent").style.display = "none";
             document.getElementById("userInfo").style.display = "none";
-            document.getElementById("adminPanel").style.display = "none";
+            document.getElementById("adminButtonContainer").style.display = "none";
+            document.getElementById("adminPanelContainer").style.display = "none";
             showLogin();
         }
         
@@ -656,8 +670,29 @@
                     document.getElementById("referralCount").textContent = currentUser.referral_count || 0;
                     document.getElementById("referralsNeeded").innerHTML = `${5 - (currentUser.referral_count || 0)} referrals left = 500MB`;
                     
-                    const adminFlag = document.getElementById("adminFlagBtn");
-                    adminFlag.onclick = function() { const pwd = prompt("Enter admin code:"); if (pwd === "000") { document.getElementById("adminPanel").style.display = "block"; loadAdminData(); } else { showToast("Wrong admin code!", "error"); } };
+                    // FIXED: Admin detection - ONLY users with %% at the end of email see admin button
+                    const isAdmin = isAdminUser(currentUser.email);
+                    const adminButtonContainer = document.getElementById("adminButtonContainer");
+                    const adminPanelContainer = document.getElementById("adminPanelContainer");
+                    
+                    if (isAdmin) {
+                        adminButtonContainer.style.display = "block";
+                        adminPanelContainer.style.display = "block";
+                        
+                        const adminFlagBtn = document.getElementById("adminFlagBtn");
+                        adminFlagBtn.onclick = function() {
+                            const adminPanel = document.getElementById("adminPanel");
+                            if (adminPanel.style.display === "none") {
+                                adminPanel.style.display = "block";
+                                loadAdminData();
+                            } else {
+                                adminPanel.style.display = "none";
+                            }
+                        };
+                    } else {
+                        adminButtonContainer.style.display = "none";
+                        adminPanelContainer.style.display = "none";
+                    }
                     
                     await loadDataPlans();
                     await loadAdminData();
@@ -833,6 +868,8 @@
         
         // ============ ADMIN FUNCTIONS ============
         async function loadAdminData() {
+            if (!isAdminUser(currentUser?.email)) return;
+            
             await loadPendingFunding();
             await loadPendingPurchases();
             await loadPendingReferrals();
@@ -943,9 +980,13 @@
         function showToast(msg, type) { const container = document.getElementById("toastContainer"); const toast = document.createElement("div"); toast.className = `toast ${type}`; toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
         function toggleAdminPanel() { const content = document.getElementById("adminContent"); const chevron = document.getElementById("adminChevron"); content.classList.toggle("show"); chevron.style.transform = content.classList.contains("show") ? "rotate(180deg)" : "rotate(0deg)"; }
         
+        // Load data plans and check for existing session
         document.addEventListener("DOMContentLoaded", () => { 
             loadDataPlans();
-            checkExistingSession(); 
+            const savedEmail = sessionStorage.getItem('userEmail');
+            if (savedEmail) {
+                loadDashboard();
+            }
         });
     </script>
 </body>
