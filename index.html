@@ -17,7 +17,7 @@
         @keyframes float { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-30px) scale(1.1); } 66% { transform: translate(-20px,20px) scale(0.9); } }
         .navbar { position: fixed; top: 0; width: 100%; background: rgba(15,25,35,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); z-index: 100; padding: 16px 24px; }
         .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .logo { display: flex; align-items: center; gap: 10px; }
         .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #8b5cf6); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
         .logo span { font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #fff, #f59e0b); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .user-info { display: flex; align-items: center; gap: 15px; position: relative; }
@@ -28,10 +28,8 @@
         .admin-flag:hover { background: rgba(30,41,59,0.6); color: #94a3b8; }
         .notification-badge { position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 50px; min-width: 20px; text-align: center; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
-        .logout-btn { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); padding: 8px 16px; border-radius: 40px; color: #ef4444; cursor: pointer; transition: all 0.2s; }
+        .logout-btn { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); padding: 8px 16px; border-radius: 40px; color: #ef4444; cursor: pointer; }
         .logout-btn:hover { background: #ef4444; color: white; }
-        .reset-btn { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); padding: 8px 16px; border-radius: 40px; color: #ef4444; cursor: pointer; font-size: 0.7rem; margin-left: 10px; transition: all 0.2s; }
-        .reset-btn:hover { background: #ef4444; color: white; }
         .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; max-width: 800px; margin: 0 auto; padding: 120px 24px 60px; position: relative; z-index: 1; }
         .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(245,158,11,0.15); padding: 6px 16px; border-radius: 40px; font-size: 0.8rem; margin-bottom: 24px; border: 1px solid rgba(245,158,11,0.3); }
         .badge-pulse { width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; animation: badgePulse 1.5s infinite; }
@@ -45,7 +43,7 @@
         .input-group:focus-within { border-color: #f59e0b; }
         .input-group i { color: #94a3b8; font-size: 18px; }
         .input-group input { width: 100%; padding: 18px 16px; background: transparent; border: none; color: white; font-size: 1rem; outline: none; }
-        .buy-btn { width: 100%; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; padding: 18px; border-radius: 60px; color: white; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; }
+        .buy-btn { width: 100%; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; padding: 18px; border-radius: 60px; color: white; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .buy-btn:hover { transform: scale(1.02); box-shadow: 0 5px 20px rgba(245,158,11,0.3); }
         .auth-switch { margin-top: 20px; color: #94a3b8; }
         .auth-switch a { color: #f59e0b; text-decoration: none; cursor: pointer; }
@@ -259,7 +257,7 @@
             <div class="referral-section"><div class="referral-header"><i class="fas fa-users"></i><h3>Refer & Earn 500MB</h3></div><div class="referral-code-box"><span class="referral-code" id="userReferralCode">Loading...</span><button class="copy-referral-btn" onclick="copyReferralCode()">Copy Code</button></div><div class="share-buttons"><button class="share-btn whatsapp" onclick="shareOnWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="share-btn facebook" onclick="shareOnFacebook()"><i class="fab fa-facebook"></i> Facebook</button><button class="share-btn twitter" onclick="shareOnTwitter()"><i class="fab fa-twitter"></i> Twitter</button><button class="share-btn telegram" onclick="shareOnTelegram()"><i class="fab fa-telegram"></i> Telegram</button></div><div class="referral-stats"><div class="referral-stat"><div class="label">Referrals Made</div><div class="value" id="referralCount">0</div></div><div class="referral-stat"><div class="label">Next Reward</div><div class="value" id="referralsNeeded">5 referrals = 500MB</div></div></div></div>
         </div>
 
-        <!-- Admin Panel -->
+        <!-- Admin Panel - Only visible to users with %% in email -->
         <div id="adminPanelContainer" style="display: none;">
             <div class="admin-panel" id="adminPanel">
                 <div class="admin-header" onclick="toggleAdminPanel()">
@@ -271,25 +269,10 @@
                         <div class="admin-tab active" data-tab="funding">💰 Wallet Funding (<span id="fundingTabCount">0</span>)</div>
                         <div class="admin-tab" data-tab="purchases">📱 Data Purchases (<span id="purchaseTabCount">0</span>)</div>
                         <div class="admin-tab" data-tab="referrals">🎁 Referral Rewards (<span id="referralTabCount">0</span>)</div>
-                        <div class="admin-tab" data-tab="reset">🗑️ Reset Database (<span id="resetTabCount">!</span>)</div>
                     </div>
                     <div id="fundingTab" class="tab-content active"><div class="pending-list" id="fundingList"><div class="empty-orders">No pending funding requests</div></div></div>
                     <div id="purchasesTab" class="tab-content"><div class="pending-list" id="purchasesList"><div class="empty-orders">No pending data purchases</div></div></div>
                     <div id="referralsTab" class="tab-content"><div class="pending-list" id="referralsList"><div class="empty-orders">No pending referral rewards</div></div></div>
-                    <div id="resetTab" class="tab-content">
-                        <div style="text-align: center; padding: 20px;">
-                            <div style="background: rgba(239,68,68,0.1); border: 2px solid #ef4444; border-radius: 20px; padding: 30px; margin: 20px 0;">
-                                <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #ef4444; margin-bottom: 20px;"></i>
-                                <h3 style="color: #ef4444; margin-bottom: 15px;">⚠️ DANGER: Reset Database</h3>
-                                <p style="margin-bottom: 20px;">This will delete ALL users, ALL transactions, and reset the entire database.</p>
-                                <p style="margin-bottom: 20px; color: #f59e0b;">This action cannot be undone!</p>
-                                <input type="text" id="resetConfirmCode" placeholder='Type "RESET" to confirm' style="width: 100%; padding: 12px; background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: white; margin-bottom: 20px; text-align: center;">
-                                <button class="decline-btn" onclick="resetDatabase()" style="background: #ef4444; color: white; padding: 12px 30px; font-size: 1rem;">
-                                    <i class="fas fa-trash"></i> RESET DATABASE
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -300,8 +283,7 @@
 
     <script>
         // ============================================
-        // LAUNCH READY - FORCED LOGOUT FOR ALL USERS
-        // Clear all sessions on page load
+        // FIXED: Admin detection based on email ending with %%
         // ============================================
         
         const API_URL = 'https://onslot.onrender.com/api';
@@ -320,10 +302,6 @@
         let referralPollingInterval = null;
         let hasShownWelcomeOverlay = false;
         let hasShownReferralOverlay = false;
-        
-        // FORCE CLEAR ALL SESSIONS ON PAGE LOAD - FRESH LAUNCH
-        sessionStorage.clear();
-        localStorage.clear();
         
         // Data Plans Configuration
         const planData = {
@@ -360,51 +338,12 @@
             ]
         };
         
-        // Check if user is admin (email ends with %%)
+        // FIXED: Check if user is admin (email ends with %%)
         function isAdminUser(email) {
             return email && email.endsWith('%%');
         }
         
-        // Reset Database Function
-        async function resetDatabase() {
-            const confirmCode = document.getElementById('resetConfirmCode')?.value;
-            if (confirmCode !== 'RESET') {
-                showToast('Type "RESET" to confirm database reset', 'error');
-                return;
-            }
-            
-            showLoadingOverlay('Resetting database... This will clear all users and data.');
-            
-            try {
-                const result = await callAPI('/reset-database', 'POST', { secret: 'LAUNCH_2024_FRESH' });
-                
-                if (result && result.success) {
-                    showToast('✅ Database reset successful! All users cleared.', 'success');
-                    
-                    // Logout current user
-                    logout();
-                    
-                    // Clear all storage again
-                    sessionStorage.clear();
-                    localStorage.clear();
-                    
-                    // Show login form
-                    showLogin();
-                    
-                    setTimeout(() => {
-                        showToast('Site is ready for launch! Create the first account.', 'success');
-                    }, 2000);
-                } else {
-                    showToast('Reset failed: ' + (result?.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                showToast('Reset failed: ' + error.message, 'error');
-            }
-            
-            hideLoadingOverlay();
-        }
-        
-        // ============ OVERLAY FUNCTIONS ============
+        // ============ OVERLAY FUNCTIONS (ALL KEPT) ============
         
         function showWelcomeOverlay() {
             if (hasShownWelcomeOverlay) return;
@@ -440,6 +379,10 @@
                 </div>
             `;
             document.body.appendChild(overlay);
+            
+            setTimeout(() => {
+                hideLoadingOverlay();
+            }, 2000);
         }
         
         function hideLoadingOverlay() {
@@ -582,7 +525,7 @@
             }
         }
         
-        // ============ POLLING FUNCTIONS ============
+        // ============ POLLING FUNCTIONS (ALL KEPT) ============
         
         function startFundingPolling() {
             if (fundingPollingInterval) clearInterval(fundingPollingInterval);
@@ -727,7 +670,7 @@
                     document.getElementById("referralCount").textContent = currentUser.referral_count || 0;
                     document.getElementById("referralsNeeded").innerHTML = `${5 - (currentUser.referral_count || 0)} referrals left = 500MB`;
                     
-                    // Admin detection - ONLY users with %% at the end of email see admin button
+                    // FIXED: Admin detection - ONLY users with %% at the end of email see admin button
                     const isAdmin = isAdminUser(currentUser.email);
                     const adminButtonContainer = document.getElementById("adminButtonContainer");
                     const adminPanelContainer = document.getElementById("adminPanelContainer");
@@ -1037,19 +980,13 @@
         function showToast(msg, type) { const container = document.getElementById("toastContainer"); const toast = document.createElement("div"); toast.className = `toast ${type}`; toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
         function toggleAdminPanel() { const content = document.getElementById("adminContent"); const chevron = document.getElementById("adminChevron"); content.classList.toggle("show"); chevron.style.transform = content.classList.contains("show") ? "rotate(180deg)" : "rotate(0deg)"; }
         
-        // Initialize - Clear all sessions on launch
+        // Load data plans and check for existing session
         document.addEventListener("DOMContentLoaded", () => { 
-            // Force clear all storage again on load
-            sessionStorage.clear();
-            localStorage.clear();
-            
             loadDataPlans();
-            showLogin();
-            
-            // Show launch message
-            setTimeout(() => {
-                showToast("🚀 Site is ready for launch! Create your account to get started.", "success");
-            }, 1000);
+            const savedEmail = sessionStorage.getItem('userEmail');
+            if (savedEmail) {
+                loadDashboard();
+            }
         });
     </script>
 </body>
