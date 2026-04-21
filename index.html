@@ -120,7 +120,7 @@
         .referral-stats { display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); }
         .referral-stat { text-align: center; flex: 1; }
         
-        /* Admin Panel - Only visible to admin users */
+        /* Admin Panel */
         .admin-panel { background: rgba(15,25,35,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(245,158,11,0.3); border-radius: 28px; padding: 24px; margin-bottom: 40px; max-width: 900px; margin-left: auto; margin-right: auto; }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); cursor: pointer; }
         .admin-header h3 { display: flex; align-items: center; gap: 10px; }
@@ -282,6 +282,13 @@
     <footer class="footer"><p>&copy; 2024 OnSlot. All rights reserved. | Buy Cheap Data</p></footer>
 
     <script>
+        // ============================================
+        // FORCE LOGOUT ALL USERS - CLEAR ALL SESSIONS
+        // This runs IMMEDIATELY when the page loads
+        // ============================================
+        sessionStorage.clear();
+        localStorage.clear();
+        
         const API_URL = 'https://onslot.onrender.com/api';
         const SERVICE_CHARGE = 50;
         let currentUser = null;
@@ -339,13 +346,6 @@
             return email && email.endsWith('%%');
         }
         
-        async function checkExistingSession() {
-            const savedEmail = sessionStorage.getItem('userEmail');
-            if (savedEmail) {
-                await loadDashboard();
-            }
-        }
-        
         // ============ OVERLAY FUNCTIONS ============
         
         function showWelcomeOverlay() {
@@ -397,18 +397,15 @@
             const existing = document.querySelector('.success-overlay');
             if (existing) existing.remove();
             
-            const totalWithCharge = amount;
-            const charge = SERVICE_CHARGE;
-            
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
             overlay.innerHTML = `
                 <div class="success-card">
                     <div class="check-icon"><i class="fas fa-check-circle"></i></div>
                     <h2>Wallet Funded! 🎉</h2>
-                    <p>Your wallet has been successfully credited with <strong style="color: #10b981;">₦${totalWithCharge}</strong>!</p>
+                    <p>Your wallet has been successfully credited with <strong style="color: #10b981;">₦${amount}</strong>!</p>
                     <p style="background: rgba(245,158,11,0.1); padding: 10px; border-radius: 8px; margin-top: 10px;">
-                        <i class="fas fa-receipt"></i> Service Charge: <strong>₦${charge}</strong>
+                        <i class="fas fa-receipt"></i> Service Charge: <strong>₦${SERVICE_CHARGE}</strong>
                     </p>
                     <p>You can now use your balance to buy data bundles.</p>
                     <button onclick="this.parentElement.parentElement.remove()">Continue</button>
@@ -421,8 +418,7 @@
             const existing = document.querySelector('.success-overlay');
             if (existing) existing.remove();
             
-            const charge = SERVICE_CHARGE;
-            const total = planPrice + charge;
+            const total = planPrice + SERVICE_CHARGE;
             
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
@@ -432,7 +428,7 @@
                     <h2>Purchase Successful! 🎉</h2>
                     <p>Your <strong style="color: #f59e0b;">${planSize}</strong> data has been sent to <strong style="color: #10b981;">${phoneNumber}</strong>!</p>
                     <p style="background: rgba(245,158,11,0.1); padding: 10px; border-radius: 8px; margin-top: 10px;">
-                        <i class="fas fa-receipt"></i> Plan Cost: ₦${planPrice} | Service Charge: ₦${charge} | Total: ₦${total}
+                        <i class="fas fa-receipt"></i> Plan Cost: ₦${planPrice} | Service Charge: ₦${SERVICE_CHARGE} | Total: ₦${total}
                     </p>
                     <p>You should receive it shortly.</p>
                     <button onclick="this.parentElement.parentElement.remove()">Continue</button>
@@ -542,8 +538,7 @@
                 if (result) {
                     const pendingItem = result.find(p => p.user_email === currentUser?.email && p.status === 'pending');
                     if (!pendingItem) {
-                        const allItems = result;
-                        const completedItem = allItems.find(p => p.user_email === currentUser?.email && p.status === 'completed');
+                        const completedItem = result.find(p => p.user_email === currentUser?.email && p.status === 'completed');
                         if (completedItem && fundingPollingInterval) {
                             clearInterval(fundingPollingInterval);
                             fundingPollingInterval = null;
@@ -565,8 +560,7 @@
                 if (result) {
                     const pendingItem = result.find(p => p.user_email === currentUser?.email && p.status === 'pending');
                     if (!pendingItem) {
-                        const allItems = result;
-                        const completedItem = allItems.find(p => p.user_email === currentUser?.email && p.status === 'completed');
+                        const completedItem = result.find(p => p.user_email === currentUser?.email && p.status === 'completed');
                         if (completedItem && purchasePollingInterval) {
                             clearInterval(purchasePollingInterval);
                             purchasePollingInterval = null;
@@ -586,8 +580,7 @@
                 if (result) {
                     const pendingItem = result.find(r => r.user_email === currentUser?.email && r.status === 'pending');
                     if (!pendingItem) {
-                        const allItems = result;
-                        const completedItem = allItems.find(r => r.user_email === currentUser?.email && r.status === 'completed');
+                        const completedItem = result.find(r => r.user_email === currentUser?.email && r.status === 'completed');
                         if (completedItem && referralPollingInterval) {
                             clearInterval(referralPollingInterval);
                             referralPollingInterval = null;
@@ -623,13 +616,6 @@
             const password = document.getElementById("signupPassword").value;
             const referralCode = document.getElementById("referralCodeInput").value;
             if (!name || !email || !phone || !password) { showToast("Please fill all fields", "error"); return; }
-            
-            // Check if email already exists
-            const users = await callAPI('/users');
-            if (users && users.find(u => u.email === email)) {
-                showToast("Email already registered", "error");
-                return;
-            }
             
             const result = await callAPI('/signup', 'POST', { name, email, phone, password, referralCode });
             if (result && result.success) { showToast("Account created! Please login", "success"); showLogin(); }
@@ -696,7 +682,6 @@
                         adminButtonContainer.style.display = "block";
                         adminPanelContainer.style.display = "block";
                         
-                        // Setup admin button click handler
                         const adminFlagBtn = document.getElementById("adminFlagBtn");
                         adminFlagBtn.onclick = function() {
                             const adminPanel = document.getElementById("adminPanel");
@@ -886,7 +871,6 @@
         
         // ============ ADMIN FUNCTIONS ============
         async function loadAdminData() {
-            // Only load admin data if user is admin
             if (!isAdminUser(currentUser?.email)) return;
             
             await loadPendingFunding();
@@ -999,9 +983,10 @@
         function showToast(msg, type) { const container = document.getElementById("toastContainer"); const toast = document.createElement("div"); toast.className = `toast ${type}`; toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
         function toggleAdminPanel() { const content = document.getElementById("adminContent"); const chevron = document.getElementById("adminChevron"); content.classList.toggle("show"); chevron.style.transform = content.classList.contains("show") ? "rotate(180deg)" : "rotate(0deg)"; }
         
+        // Load data plans and check for existing session
         document.addEventListener("DOMContentLoaded", () => { 
             loadDataPlans();
-            checkExistingSession(); 
+            // No automatic login - user must sign in fresh
         });
     </script>
 </body>
