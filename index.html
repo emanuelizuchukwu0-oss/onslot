@@ -67,6 +67,8 @@
         .custom-amount-container input { flex: 2; padding: 12px; background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: white; font-size: 1rem; outline: none; }
         .custom-amount-container input:focus { border-color: #f59e0b; }
         .custom-amount-container button { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.3); padding: 12px 20px; border-radius: 40px; color: #f59e0b; cursor: pointer; }
+        .charge-note { background: rgba(245,158,11,0.1); border-radius: 12px; padding: 10px; margin: 15px 0; text-align: center; font-size: 0.8rem; }
+        .charge-note i { color: #f59e0b; margin-right: 5px; }
         .proceed-payment-btn { background: linear-gradient(135deg, #10b981, #059669); border: none; padding: 14px; border-radius: 50px; width: 100%; color: white; font-weight: 600; cursor: pointer; margin-top: 10px; display: none; }
         .proceed-payment-btn.show { display: block; }
         .payment-section { display: none; margin-top: 20px; }
@@ -203,6 +205,9 @@
                 </div>
                 
                 <div id="amountSection" class="amount-section">
+                    <div class="charge-note">
+                        <i class="fas fa-info-circle"></i> ₦50 service charge applies to all transactions
+                    </div>
                     <div class="amount-buttons">
                         <div class="amount-btn" data-amount="400">₦400</div>
                         <div class="amount-btn" data-amount="500">₦500</div>
@@ -233,6 +238,9 @@
             <!-- Buy Data Section -->
             <div class="data-section">
                 <div class="section-title"><i class="fas fa-database"></i> Buy Data</div>
+                <div class="charge-note">
+                    <i class="fas fa-info-circle"></i> ₦50 service charge applies to all data purchases
+                </div>
                 <div class="network-buttons">
                     <div class="network-btn mtn" onclick="selectNetwork('mtn')"><i class="fas fa-tower-cell"></i><span>MTN</span></div>
                     <div class="network-btn airtel" onclick="selectNetwork('airtel')"><i class="fas fa-broadcast-tower"></i><span>Airtel</span></div>
@@ -257,6 +265,7 @@
 
     <script>
         const API_URL = 'https://onslot.onrender.com/api';
+        const SERVICE_CHARGE = 50;
         let currentUser = null;
         let selectedAmount = null;
         let selectedFundingMethod = "bank_transfer";
@@ -269,7 +278,7 @@
         let hasShownWelcomeOverlay = false;
         let hasShownReferralOverlay = false;
         
-        // ============ ORIGINAL DATA PLANS FROM YOUR FIRST CODE ============
+        // Data Plans Configuration
         const planData = {
             mtn: [
                 { size: "500MB", validity: "7 days", price: 200 },
@@ -317,7 +326,7 @@
             hasShownWelcomeOverlay = true;
             const overlay = document.createElement('div');
             overlay.className = 'overlay';
-            overlay.innerHTML = `<div class="overlay-card"><div style="font-size: 60px;">👋</div><h2>Welcome to OnSlot!</h2><p>You're ready to start buying cheap data!</p><p style="background: rgba(245,158,11,0.1); padding: 10px; border-radius: 12px; margin: 15px 0;">💡 <strong>Quick Tip:</strong> Fund your wallet to start buying data bundles!</p><button onclick="this.parentElement.parentElement.remove()">Get Started</button></div>`;
+            overlay.innerHTML = `<div class="overlay-card"><div style="font-size: 60px;">👋</div><h2>Welcome to OnSlot!</h2><p>You're ready to start buying cheap data!</p><p style="background: rgba(245,158,11,0.1); padding: 10px; border-radius: 12px; margin: 15px 0;">💡 <strong>Quick Tip:</strong> ₦50 service charge applies to all transactions</p><button onclick="this.parentElement.parentElement.remove()">Get Started</button></div>`;
             document.body.appendChild(overlay);
         }
         
@@ -339,21 +348,21 @@
         function showFundingSuccessOverlay(amount) {
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
-            overlay.innerHTML = `<div class="success-card"><div class="check-icon"><i class="fas fa-check-circle"></i></div><h2>Wallet Funded! 🎉</h2><p>Your wallet has been successfully credited with <strong style="color: #10b981;">₦${amount}</strong>!</p><p>You can now use your balance to buy data bundles.</p><button onclick="this.parentElement.parentElement.remove()">Continue</button></div>`;
+            overlay.innerHTML = `<div class="success-card"><div class="check-icon"><i class="fas fa-check-circle"></i></div><h2>Wallet Funded! 🎉</h2><p>Your wallet has been credited with <strong style="color: #10b981;">₦${amount}</strong>!</p><p>You can now use your balance to buy data bundles.</p><button onclick="this.parentElement.parentElement.remove()">Continue</button></div>`;
             document.body.appendChild(overlay);
         }
         
-        function showPurchaseSuccessOverlay(planSize, phoneNumber) {
+        function showPurchaseSuccessOverlay(planSize, phoneNumber, totalPrice) {
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
-            overlay.innerHTML = `<div class="success-card"><div class="check-icon"><i class="fas fa-check-circle"></i></div><h2>Purchase Successful! 🎉</h2><p>Your <strong style="color: #f59e0b;">${planSize}</strong> data has been sent to <strong style="color: #10b981;">${phoneNumber}</strong>!</p><p>You should receive it shortly.</p><button onclick="this.parentElement.parentElement.remove()">Continue</button></div>`;
+            overlay.innerHTML = `<div class="success-card"><div class="check-icon"><i class="fas fa-check-circle"></i></div><h2>Purchase Successful! 🎉</h2><p>Your <strong style="color: #f59e0b;">${planSize}</strong> data has been sent to <strong style="color: #10b981;">${phoneNumber}</strong>!</p><p>Total charged: ₦${totalPrice} (incl. ₦${SERVICE_CHARGE} fee)</p><button onclick="this.parentElement.parentElement.remove()">Continue</button></div>`;
             document.body.appendChild(overlay);
         }
         
         function showReferralSuccessOverlay() {
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
-            overlay.innerHTML = `<div class="success-card"><div class="check-icon"><i class="fas fa-check-circle"></i></div><h2>Reward Credited! 🎉</h2><p>Your 500MB referral reward has been added to your wallet!</p><p>Thank you for inviting your friends!</p><button onclick="this.parentElement.parentElement.remove()">Continue</button></div>`;
+            overlay.innerHTML = `<div class="success-card"><div class="check-icon"><i class="fas fa-check-circle"></i></div><h2>Reward Credited! 🎉</h2><p>Your 500MB referral reward has been added to your wallet!</p><button onclick="this.parentElement.parentElement.remove()">Continue</button></div>`;
             document.body.appendChild(overlay);
         }
         
@@ -417,14 +426,14 @@
             }, 3000);
         }
         
-        function startPurchasePolling(pendingId, planSize, phoneNumber) {
+        function startPurchasePolling(pendingId, planSize, phoneNumber, totalAmount) {
             if (statusPollingInterval) clearInterval(statusPollingInterval);
             statusPollingInterval = setInterval(async () => {
                 const result = await callAPI('/admin/pending-purchases');
                 const item = result?.find(p => p.id == pendingId);
                 if (item && item.status === 'completed') {
                     clearInterval(statusPollingInterval);
-                    showPurchaseSuccessOverlay(planSize, phoneNumber);
+                    showPurchaseSuccessOverlay(planSize, phoneNumber, totalAmount);
                     await loadAdminData();
                 } else if (item && item.status === 'declined') {
                     clearInterval(statusPollingInterval);
@@ -563,11 +572,13 @@
                         document.querySelectorAll(".amount-btn").forEach(b => b.classList.remove("selected"));
                         selectedAmount = customAmount;
                         document.getElementById("proceedPaymentBtn").classList.add("show");
-                        showToast(`Custom amount ₦${selectedAmount} selected`, "success");
+                        showToast(`Custom amount ₦${selectedAmount} selected (+₦${SERVICE_CHARGE} fee)`, "success");
                     };
                     
                     document.getElementById("proceedPaymentBtn").onclick = () => {
                         if (!selectedAmount) { showToast("Please select an amount first", "error"); return; }
+                        const total = selectedAmount + SERVICE_CHARGE;
+                        showToast(`You'll pay ₦${selectedAmount} + ₦${SERVICE_CHARGE} fee = ₦${total}`, "info");
                         document.getElementById("paymentSection").classList.add("show");
                     };
                 }
@@ -589,6 +600,7 @@
                     <div class="plan-size">${plan.size}</div>
                     <div class="plan-validity">📅 ${plan.validity}</div>
                     <div class="plan-price">₦${plan.price}</div>
+                    <div style="font-size:0.7rem; color:#f59e0b;">+ ₦${SERVICE_CHARGE} fee</div>
                 </div>
             `).join("");
             
@@ -602,6 +614,8 @@
                         validity: card.dataset.planValidity
                     };
                     document.getElementById("buyDataBtn").disabled = false;
+                    const total = selectedPlan.price + SERVICE_CHARGE;
+                    showToast(`Total: ₦${selectedPlan.price} + ₦${SERVICE_CHARGE} fee = ₦${total}`, "info");
                 };
             });
         }
@@ -619,13 +633,21 @@
             const transactionRef = document.getElementById("fundingTransactionRef").value;
             if (!selectedAmount) { showToast("Please select an amount", "error"); return; }
             if (!transactionRef) { showToast("Enter transaction reference", "error"); return; }
-            showLoadingOverlay("Submitting your funding request...");
-            const result = await callAPI('/submit-funding', 'POST', { userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone, amount: selectedAmount, transactionRef: transactionRef, paymentMethod: selectedFundingMethod });
+            
+            const totalAmount = selectedAmount + SERVICE_CHARGE;
+            showLoadingOverlay(`Submitting funding: ₦${selectedAmount} + ₦${SERVICE_CHARGE} fee = ₦${totalAmount}...`);
+            
+            const result = await callAPI('/submit-funding', 'POST', { 
+                userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone, 
+                amount: selectedAmount, serviceCharge: SERVICE_CHARGE, totalAmount: totalAmount,
+                transactionRef: transactionRef, paymentMethod: selectedFundingMethod 
+            });
+            
             if (result && result.success) {
                 const pending = await callAPI('/admin/pending-funding');
                 const latest = pending?.find(p => p.user_email === currentUser.email && p.status === 'pending');
                 if (latest) { startFundingPolling(latest.id, selectedAmount); }
-                else { showToast("Funding request submitted! Admin will verify.", "success"); }
+                else { showToast(`Funding request submitted! ₦${totalAmount} will be added upon approval.`, "success"); }
                 document.getElementById("accountDetails").style.display = "none";
                 document.getElementById("amountSection").classList.remove("show");
                 document.getElementById("paymentSection").classList.remove("show");
@@ -644,15 +666,29 @@
             if (!selectedPlan) { showToast("Select a data plan", "error"); return; }
             const phone = document.getElementById("purchasePhone").value;
             if (!phone || !/^(0[7-9][0-1]{1}[0-9]{8})$/.test(phone)) { showToast("Enter valid phone number", "error"); return; }
-            if ((currentUser.wallet_balance || 0) < selectedPlan.price) { showToast("Insufficient wallet balance. Please fund your wallet.", "error"); return; }
-            showLoadingOverlay(`Processing your purchase of ${selectedPlan.size}...`);
-            const result = await callAPI('/submit-purchase', 'POST', { userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone, network: selectedNetwork, planSize: selectedPlan.size, amount: selectedPlan.price, phoneNumber: phone });
+            
+            const totalAmount = selectedPlan.price + SERVICE_CHARGE;
+            
+            if ((currentUser.wallet_balance || 0) < totalAmount) { 
+                showToast(`Insufficient balance. Need ₦${totalAmount} (₦${selectedPlan.price} + ₦${SERVICE_CHARGE} fee)`, "error"); 
+                return; 
+            }
+            
+            showLoadingOverlay(`Processing: ₦${selectedPlan.price} + ₦${SERVICE_CHARGE} fee = ₦${totalAmount}...`);
+            
+            const result = await callAPI('/submit-purchase', 'POST', { 
+                userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone, 
+                network: selectedNetwork, planSize: selectedPlan.size, planPrice: selectedPlan.price,
+                serviceCharge: SERVICE_CHARGE, totalAmount: totalAmount, validity: selectedPlan.validity,
+                phoneNumber: phone 
+            });
+            
             if (result && result.success) {
                 const pending = await callAPI('/admin/pending-purchases');
                 const latest = pending?.find(p => p.user_email === currentUser.email && p.status === 'pending');
-                if (latest) { startPurchasePolling(latest.id, selectedPlan.size, phone); }
+                if (latest) { startPurchasePolling(latest.id, selectedPlan.size, phone, totalAmount); }
                 else { showToast("Purchase request submitted! Admin will verify.", "success"); }
-                currentUser.wallet_balance -= selectedPlan.price;
+                currentUser.wallet_balance -= totalAmount;
                 document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`;
                 await loadAdminData();
                 document.querySelectorAll(".plan-card").forEach(c => c.classList.remove("selected"));
@@ -690,7 +726,10 @@
             if (!container) return;
             const pending = pendingFunding.filter(p => p.status === "pending");
             if (pending.length === 0) { container.innerHTML = '<div class="empty-orders">No pending funding requests</div>'; return; }
-            container.innerHTML = pending.map(f => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${f.user_name}</strong></p><p>📧 ${f.user_email}</p><p>📱 ${f.user_phone || "N/A"} <button class="copy-btn" onclick="copyToClipboard('${f.user_phone || ""}')">Copy</button></p><p>💰 ₦${f.amount}</p><p>💳 ${f.payment_method}</p><p>📝 ${f.transaction_ref}</p><p>⏰ ${f.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approveFunding(${f.id})"><i class="fas fa-check"></i> Approve</button><button class="decline-btn" onclick="declineFunding(${f.id})"><i class="fas fa-times"></i> Decline</button></div></div>`).join("");
+            container.innerHTML = pending.map(f => {
+                const total = (f.amount || 0) + SERVICE_CHARGE;
+                return `<div class="pending-item"><div class="item-details"><p><strong>👤 ${f.user_name}</strong></p><p>📧 ${f.user_email}</p><p>📱 ${f.user_phone || "N/A"} <button class="copy-btn" onclick="copyToClipboard('${f.user_phone || ""}')">Copy</button></p><p>💰 Amount: ₦${f.amount} + ₦${SERVICE_CHARGE} fee = ₦${total}</p><p>💳 ${f.payment_method}</p><p>📝 ${f.transaction_ref}</p><p>⏰ ${f.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approveFunding(${f.id})"><i class="fas fa-check"></i> Approve</button><button class="decline-btn" onclick="declineFunding(${f.id})"><i class="fas fa-times"></i> Decline</button></div></div>`;
+            }).join("");
         }
         
         function renderPurchasesList() {
@@ -698,7 +737,11 @@
             if (!container) return;
             const pending = pendingPurchases.filter(p => p.status === "pending");
             if (pending.length === 0) { container.innerHTML = '<div class="empty-orders">No pending data purchases</div>'; return; }
-            container.innerHTML = pending.map(p => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${p.user_name}</strong></p><p>📧 ${p.user_email}</p><p>📱 Recipient: ${p.phone_number} <button class="copy-btn" onclick="copyToClipboard('${p.phone_number}')">Copy</button></p><p>🌐 ${p.network.toUpperCase()} - ${p.plan_size}</p><p>💰 ₦${p.amount}</p><p>⏰ ${p.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approvePurchase(${p.id})"><i class="fas fa-check"></i> Data Sent</button><button class="decline-btn" onclick="declinePurchase(${p.id})"><i class="fas fa-times"></i> Refund</button></div></div>`).join("");
+            container.innerHTML = pending.map(p => {
+                const planPrice = p.plan_price || p.amount || 0;
+                const total = planPrice + SERVICE_CHARGE;
+                return `<div class="pending-item"><div class="item-details"><p><strong>👤 ${p.user_name}</strong></p><p>📧 ${p.user_email}</p><p>📱 Recipient: ${p.phone_number} <button class="copy-btn" onclick="copyToClipboard('${p.phone_number}')">Copy</button></p><p>🌐 ${p.network ? p.network.toUpperCase() : "N/A"} - ${p.plan_size} (${p.validity || 'N/A'})</p><p>💰 Plan: ₦${planPrice} + ₦${SERVICE_CHARGE} fee = ₦${total}</p><p>💳 Wallet Balance Before: ₦${p.wallet_balance || 'N/A'}</p><p>⏰ ${p.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approvePurchase(${p.id})"><i class="fas fa-check"></i> Data Sent</button><button class="decline-btn" onclick="declinePurchase(${p.id})"><i class="fas fa-times"></i> Refund</button></div></div>`;
+            }).join("");
         }
         
         function renderReferralsList() {
