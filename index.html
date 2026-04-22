@@ -353,56 +353,56 @@
         }
         
         // ============ AUTH ============
-        async function signup() {
-            const username = document.getElementById("signupUsername").value.trim();
-            const phone = document.getElementById("signupPhone").value;
-            const password = document.getElementById("signupPassword").value;
-            const referralCode = document.getElementById("referralCodeInput").value;
-            
-            if (!username || !phone || !password) { 
-                showToast("Please fill all fields", "error"); 
-                return; 
-            }
-            
-            const result = await callAPI('/signup', 'POST', { 
-                username: username, 
-                phone: phone, 
-                password: password, 
-                referralCode: referralCode 
-            });
-            
-            if (result && result.success) { 
-                showToast("Account created! Please login", "success"); 
-                showLogin(); 
-            } else { 
-                showToast(result?.error || "Signup failed", "error"); 
-            }
-        }
+       async function signup() {
+    const username = document.getElementById("signupUsername").value.trim();
+    const phone = document.getElementById("signupPhone").value;
+    const password = document.getElementById("signupPassword").value;
+    const referralCode = document.getElementById("referralCodeInput").value;
+    
+    if (!username || !phone || !password) { 
+        showToast("Please fill all fields", "error"); 
+        return; 
+    }
+    
+    const result = await callAPI('/signup', 'POST', { 
+        username: username, 
+        phone: phone, 
+        password: password, 
+        referralCode: referralCode 
+    });
+    
+    if (result && result.success) { 
+        showToast("Account created! Please login", "success"); 
+        showLogin(); 
+    } else { 
+        showToast(result?.error || "Signup failed", "error"); 
+    }
+}
         
-        async function login() {
-            const username = document.getElementById("loginUsername").value.trim();
-            const password = document.getElementById("loginPassword").value;
-            
-            if (!username || !password) { 
-                showToast("Please enter username and password", "error"); 
-                return; 
-            }
-            
-            const result = await callAPI('/login', 'POST', { username, password });
-            
-            if (result && result.success) {
-                currentUser = result.user;
-                sessionStorage.setItem('userUsername', currentUser.username);
-                showToast("Login successful!", "success");
-                await loadDashboard();
-                showWelcomeOverlay();
-                if (currentUser.referral_count >= 5 && !currentUser.referral_reward_claimed) {
-                    setTimeout(() => showReferralRewardOverlay(), 1500);
-                }
-            } else { 
-                showToast(result?.error || "Invalid username or password", "error"); 
-            }
+       async function login() {
+    const username = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    
+    if (!username || !password) { 
+        showToast("Please enter username and password", "error"); 
+        return; 
+    }
+    
+    const result = await callAPI('/login', 'POST', { username, password });
+    
+    if (result && result.success) {
+        currentUser = result.user;
+        sessionStorage.setItem('userUsername', currentUser.username);
+        showToast("Login successful!", "success");
+        await loadDashboard();
+        showWelcomeOverlay();
+        if (currentUser.referral_count >= 5 && !currentUser.referral_reward_claimed) {
+            setTimeout(() => showReferralRewardOverlay(), 1500);
         }
+    } else { 
+        showToast(result?.error || "Invalid username or password", "error"); 
+    }
+}
         
         function logout() {
             currentUser = null;
