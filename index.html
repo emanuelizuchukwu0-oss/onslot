@@ -159,7 +159,7 @@
         .processing-card { background: linear-gradient(135deg, #0f1923, #1a1a2e); border: 2px solid #f59e0b; border-radius: 32px; padding: 40px; text-align: center; max-width: 500px; width: 90%; animation: slideUp 0.4s ease; }
         .processing-spinner { width: 60px; height: 60px; border: 4px solid rgba(245,158,11,0.2); border-top-color: #f59e0b; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .processing-card p { color: #94a3b8; margin: 10px 0; white-space: pre-line; }
+        .processing-card p { color: #94a3b8; margin: 10px 0; }
         .processing-status { font-size: 0.9rem; margin-top: 10px; color: #f59e0b; }
         .refresh-btn { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; padding: 12px 24px; border-radius: 40px; color: white; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .refresh-btn:hover { transform: scale(1.02); }
@@ -170,14 +170,14 @@
         .success-card { background: linear-gradient(135deg, #0f1923, #1a1a2e); border: 2px solid #10b981; border-radius: 32px; padding: 40px; text-align: center; max-width: 450px; width: 90%; animation: slideUp 0.4s ease; }
         .success-card .check-icon { font-size: 80px; color: #10b981; margin-bottom: 20px; animation: bounce 0.6s ease; }
         .success-card h2 { color: #10b981; font-size: 1.8rem; margin-bottom: 15px; }
-        .success-card p { color: #94a3b8; margin-bottom: 10px; white-space: pre-line; }
+        .success-card p { color: #94a3b8; margin-bottom: 10px; }
         .success-card button { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; padding: 12px 30px; border-radius: 40px; color: white; font-weight: bold; cursor: pointer; margin-top: 20px; }
         
         .error-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); backdrop-filter: blur(16px); z-index: 6000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
         .error-card { background: linear-gradient(135deg, #0f1923, #1a1a2e); border: 2px solid #ef4444; border-radius: 32px; padding: 40px; text-align: center; max-width: 450px; width: 90%; animation: slideUp 0.4s ease; }
         .error-card .error-icon { font-size: 80px; color: #ef4444; margin-bottom: 20px; }
         .error-card h2 { color: #ef4444; font-size: 1.8rem; margin-bottom: 15px; }
-        .error-card p { color: #94a3b8; margin-bottom: 10px; white-space: pre-line; }
+        .error-card p { color: #94a3b8; margin-bottom: 10px; }
         .error-card button { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; padding: 12px 30px; border-radius: 40px; color: white; font-weight: bold; cursor: pointer; margin-top: 20px; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -292,7 +292,6 @@
         let currentProcessingOverlay = null;
         let pendingRequestId = null;
         let pendingRequestType = null;
-        let pollingInterval = null;
         
         // Data Plans Configuration
         const planData = {
@@ -329,74 +328,9 @@
             ]
         };
         
-        // Start polling for status updates
-        function startStatusPolling(requestId, type, details) {
-            if (pollingInterval) clearInterval(pollingInterval);
-            
-            pollingInterval = setInterval(async () => {
-                let result;
-                if (type === 'funding') {
-                    result = await callAPI('/admin/pending-funding');
-                    const item = result?.find(p => p.id == requestId);
-                    if (item && item.status !== 'pending') {
-                        clearInterval(pollingInterval);
-                        pollingInterval = null;
-                        if (currentProcessingOverlay) {
-                            currentProcessingOverlay.remove();
-                            currentProcessingOverlay = null;
-                        }
-                        if (item.status === 'completed') {
-                            showSuccessOverlay(`✅ Funding Successful!\n\n₦${details.amountToAdd} has been added to your wallet!`, "Funding Approved!");
-                            await refreshWalletBalance();
-                        } else if (item.status === 'declined') {
-                            showErrorOverlay(`❌ Funding Declined!\n\nYour funding request was declined by admin.`, "Funding Declined");
-                        }
-                        await loadAdminData();
-                    }
-                } 
-                else if (type === 'purchase') {
-                    result = await callAPI('/admin/pending-purchases');
-                    const item = result?.find(p => p.id == requestId);
-                    if (item && item.status !== 'pending') {
-                        clearInterval(pollingInterval);
-                        pollingInterval = null;
-                        if (currentProcessingOverlay) {
-                            currentProcessingOverlay.remove();
-                            currentProcessingOverlay = null;
-                        }
-                        if (item.status === 'completed') {
-                            showSuccessOverlay(`✅ Purchase Successful!\n\n${details.planSize} data has been sent to ${details.phoneNumber}!\nTotal charged: ₦${details.totalAmount}`, "Data Purchase Successful!");
-                            await refreshWalletBalance();
-                        } else if (item.status === 'declined') {
-                            showErrorOverlay(`❌ Purchase Declined!\n\nYour purchase was declined. Amount has been refunded to your wallet.`, "Purchase Declined");
-                            await refreshWalletBalance();
-                        }
-                        await loadAdminData();
-                    }
-                }
-                else if (type === 'referral') {
-                    result = await callAPI('/admin/pending-referrals');
-                    const item = result?.find(r => r.id == requestId);
-                    if (item && item.status !== 'pending') {
-                        clearInterval(pollingInterval);
-                        pollingInterval = null;
-                        if (currentProcessingOverlay) {
-                            currentProcessingOverlay.remove();
-                            currentProcessingOverlay = null;
-                        }
-                        if (item.status === 'completed') {
-                            showSuccessOverlay(`✅ Referral Reward Credited!\n\nYour 500MB data reward has been added to your wallet!`, "Reward Credited!");
-                            await refreshWalletBalance();
-                        } else if (item.status === 'declined') {
-                            showErrorOverlay(`❌ Referral Reward Declined!\n\nYour referral reward request was declined.`, "Reward Declined");
-                        }
-                        await loadAdminData();
-                    }
-                }
-            }, 3000);
-        }
-        
-        function showProcessingOverlay(message, type, requestId, details) {
+        // Show processing overlay with refresh button
+        function showProcessingOverlay(message, type, requestId) {
+            // Remove any existing processing overlay
             if (currentProcessingOverlay) {
                 currentProcessingOverlay.remove();
             }
@@ -411,28 +345,107 @@
                 <div class="processing-card">
                     <div class="processing-spinner"></div>
                     <p>${message}</p>
-                    <p class="processing-status">⏳ Waiting for admin approval...</p>
-                    <button class="close-overlay-btn" onclick="closeProcessingOverlay()">Close</button>
+                    <p class="processing-status">⏳ Request submitted! Waiting for admin approval...</p>
+                    <button class="refresh-btn" onclick="checkRequestStatus()">
+                        <i class="fas fa-sync-alt"></i> Check Status & Refresh
+                    </button>
+                    <button class="close-overlay-btn" onclick="closeProcessingOverlay()">
+                        Close
+                    </button>
                 </div>
             `;
             document.body.appendChild(overlay);
             currentProcessingOverlay = overlay;
-            
-            // Start polling for status updates
-            startStatusPolling(requestId, type, details);
         }
         
         function closeProcessingOverlay() {
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
-                pollingInterval = null;
-            }
             if (currentProcessingOverlay) {
                 currentProcessingOverlay.remove();
                 currentProcessingOverlay = null;
             }
             pendingRequestId = null;
             pendingRequestType = null;
+        }
+        
+        async function checkRequestStatus() {
+            if (!pendingRequestId || !pendingRequestType) {
+                showToast("No pending request found", "error");
+                closeProcessingOverlay();
+                return;
+            }
+            
+            showToast("Checking status...", "info");
+            
+            if (pendingRequestType === 'funding') {
+                const result = await callAPI('/admin/pending-funding');
+                const item = result?.find(p => p.id == pendingRequestId);
+                
+                if (item) {
+                    if (item.status === 'completed') {
+                        closeProcessingOverlay();
+                        showSuccessOverlay(`Wallet funded successfully!`, "Funding Successful!");
+                        await refreshWalletBalance();
+                        await loadAdminData();
+                    } else if (item.status === 'declined') {
+                        closeProcessingOverlay();
+                        showErrorOverlay(`Your funding request was declined.`, "Funding Declined");
+                        await loadAdminData();
+                    } else {
+                        showToast("Still pending. Please wait for admin approval.", "info");
+                    }
+                } else {
+                    showToast("Request not found. It may have been processed.", "info");
+                    closeProcessingOverlay();
+                    await refreshWalletBalance();
+                }
+            } 
+            else if (pendingRequestType === 'purchase') {
+                const result = await callAPI('/admin/pending-purchases');
+                const item = result?.find(p => p.id == pendingRequestId);
+                
+                if (item) {
+                    if (item.status === 'completed') {
+                        closeProcessingOverlay();
+                        showSuccessOverlay(`Purchase successful! Data sent.`, "Purchase Successful!");
+                        await refreshWalletBalance();
+                        await loadAdminData();
+                    } else if (item.status === 'declined') {
+                        closeProcessingOverlay();
+                        showErrorOverlay(`Your purchase was declined. Amount refunded.`, "Purchase Declined");
+                        await refreshWalletBalance();
+                        await loadAdminData();
+                    } else {
+                        showToast("Still pending. Please wait for admin approval.", "info");
+                    }
+                } else {
+                    showToast("Request not found. It may have been processed.", "info");
+                    closeProcessingOverlay();
+                    await refreshWalletBalance();
+                }
+            }
+            else if (pendingRequestType === 'referral') {
+                const result = await callAPI('/admin/pending-referrals');
+                const item = result?.find(r => r.id == pendingRequestId);
+                
+                if (item) {
+                    if (item.status === 'completed') {
+                        closeProcessingOverlay();
+                        showSuccessOverlay(`Referral reward credited!`, "Reward Credited!");
+                        await refreshWalletBalance();
+                        await loadAdminData();
+                    } else if (item.status === 'declined') {
+                        closeProcessingOverlay();
+                        showErrorOverlay(`Your referral reward was declined.`, "Reward Declined");
+                        await loadAdminData();
+                    } else {
+                        showToast("Still pending. Please wait for admin approval.", "info");
+                    }
+                } else {
+                    showToast("Request not found. It may have been processed.", "info");
+                    closeProcessingOverlay();
+                    await refreshWalletBalance();
+                }
+            }
         }
         
         function showSuccessOverlay(message, title = "Success!") {
@@ -449,7 +462,7 @@
             document.body.appendChild(overlay);
             setTimeout(() => {
                 if (overlay && overlay.parentElement) overlay.remove();
-            }, 5000);
+            }, 4000);
         }
         
         function showErrorOverlay(message, title = "Failed!") {
@@ -466,7 +479,7 @@
             document.body.appendChild(overlay);
             setTimeout(() => {
                 if (overlay && overlay.parentElement) overlay.remove();
-            }, 5000);
+            }, 4000);
         }
         
         function showWelcomeOverlay() {
@@ -518,10 +531,9 @@
                 const latest = pending?.find(r => r.user_email === currentUser.email && r.status === 'pending');
                 if (latest) {
                     showProcessingOverlay(
-                        `📱 Referral Reward Request\n\nPhone: ${phone}\nNetwork: ${window.selectedReferralNetwork.toUpperCase()}\n\nPlease wait for admin approval...`,
+                        `Referral Reward Request\nPhone: ${phone}\nNetwork: ${window.selectedReferralNetwork.toUpperCase()}\n\nPlease wait for admin approval. Click the refresh button to check status.`,
                         'referral',
-                        latest.id,
-                        {}
+                        latest.id
                     );
                 } else {
                     showToast("Referral reward request sent to admin!", "success");
@@ -555,11 +567,13 @@
         // Refresh wallet balance
         async function refreshWalletBalance() {
             if (currentUser) {
+                showToast("Refreshing balance...", "info");
                 const userData = await callAPI(`/user/${encodeURIComponent(currentUser.email)}`);
                 if (userData && userData.wallet_balance !== undefined) {
                     currentUser.wallet_balance = userData.wallet_balance;
                     localStorage.setItem('onslot_user', JSON.stringify(currentUser));
                     document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance} <i class="fas fa-sync-alt" style="font-size: 10px;"></i>`;
+                    showToast(`Balance updated: ₦${currentUser.wallet_balance}`, "success");
                 }
             }
         }
@@ -618,7 +632,6 @@
         }
         
         function logout() {
-            if (pollingInterval) clearInterval(pollingInterval);
             currentUser = null;
             localStorage.removeItem('onslot_user');
             hasShownWelcomeOverlay = false;
@@ -786,10 +799,9 @@
                 const latest = pending?.find(p => p.user_email === currentUser.email && p.status === 'pending');
                 if (latest) {
                     showProcessingOverlay(
-                        `💰 Funding Request\n\nYou send: ₦${selectedAmount}\nFee deducted: ₦${SERVICE_CHARGE}\nAmount to add: ₦${amountToAdd}\n\nPlease wait for admin approval...`,
+                        `Funding Request\nYou send: ₦${selectedAmount}\nFee deducted: ₦${SERVICE_CHARGE}\nAmount to add: ₦${amountToAdd}\n\nPlease wait for admin approval. Click the refresh button to check status.`,
                         'funding',
-                        latest.id,
-                        { amountToAdd: amountToAdd }
+                        latest.id
                     );
                 } else {
                     showToast(`Funding request submitted! ₦${amountToAdd} will be added upon approval.`, "success");
@@ -849,10 +861,9 @@
                 const latest = pending?.find(p => p.user_email === currentUser.email && p.status === 'pending');
                 if (latest) {
                     showProcessingOverlay(
-                        `📱 Purchase Request\n\nPlan: ${selectedPlan.size}\nNetwork: ${selectedNetwork.toUpperCase()}\nPhone: ${phone}\nAmount: ₦${selectedPlan.price} + ₦${SERVICE_CHARGE} fee = ₦${totalAmount}\n\nPlease wait for admin approval...`,
+                        `Purchase Request\nPlan: ${selectedPlan.size}\nNetwork: ${selectedNetwork.toUpperCase()}\nPhone: ${phone}\nAmount: ₦${selectedPlan.price} + ₦${SERVICE_CHARGE} fee = ₦${totalAmount}\n\nPlease wait for admin approval. Click the refresh button to check status.`,
                         'purchase',
-                        latest.id,
-                        { planSize: selectedPlan.size, phoneNumber: phone, totalAmount: totalAmount }
+                        latest.id
                     );
                 } else {
                     showToast("Purchase request submitted! Admin will verify.", "success");
