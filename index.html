@@ -353,8 +353,8 @@
         }
         
         // ============ AUTH ============
-       async function signup() {
-    const username = document.getElementById("signupUsername").value.trim();
+      async function signup() {
+    const username = document.getElementById("signupUsername").value.trim().toLowerCase();
     const phone = document.getElementById("signupPhone").value;
     const password = document.getElementById("signupPassword").value;
     const referralCode = document.getElementById("referralCodeInput").value;
@@ -379,8 +379,8 @@
     }
 }
         
-       async function login() {
-    const username = document.getElementById("loginUsername").value.trim();
+   async function login() {
+    const username = document.getElementById("loginUsername").value.trim().toLowerCase();
     const password = document.getElementById("loginPassword").value;
     
     if (!username || !password) { 
