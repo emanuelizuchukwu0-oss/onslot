@@ -95,6 +95,7 @@
         .plan-card:hover { transform: translateY(-2px); }
         .plan-card.selected { border-width: 2px; }
         .plan-size { font-size: 1rem; font-weight: 700; }
+        .plan-validity { font-size: 0.7rem; color: #94a3b8; margin-top: 3px; }
         .plan-price { font-size: 1.1rem; font-weight: bold; margin-top: 5px; color: #f59e0b; }
         .phone-input { margin: 15px 0; }
         .buy-data-btn { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; padding: 14px; border-radius: 50px; width: 100%; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -261,13 +262,47 @@
         let selectedFundingMethod = "bank_transfer";
         let selectedNetwork = null;
         let selectedPlan = null;
-        let dataPlans = [];
         let pendingFunding = [];
         let pendingPurchases = [];
         let pendingReferrals = [];
         let statusPollingInterval = null;
         let hasShownWelcomeOverlay = false;
         let hasShownReferralOverlay = false;
+        
+        // ============ ORIGINAL DATA PLANS FROM YOUR FIRST CODE ============
+        const planData = {
+            mtn: [
+                { size: "500MB", validity: "7 days", price: 200 },
+                { size: "1GB", validity: "7 days", price: 350 },
+                { size: "2GB", validity: "7 days", price: 800 },
+                { size: "3GB", validity: "1 month", price: 1200 },
+                { size: "5GB", validity: "1 month", price: 1900 }
+            ],
+            airtel: [
+                { size: "300MB", validity: "2 days", price: 200 },
+                { size: "600MB", validity: "2 days", price: 300 },
+                { size: "1.5GB", validity: "2 days", price: 350 },
+                { size: "2GB", validity: "2 days", price: 400 },
+                { size: "6GB", validity: "7 days", price: 2600 },
+                { size: "10GB", validity: "7 days", price: 399 }
+            ],
+            glo: [
+                { size: "200MB", validity: "2 days", price: 99 },
+                { size: "500MB", validity: "2 days", price: 200 },
+                { size: "1GB", validity: "7 days", price: 350 },
+                { size: "2GB", validity: "7 days", price: 700 },
+                { size: "5GB", validity: "7 days", price: 1500 },
+                { size: "10GB", validity: "1 month", price: 2500 }
+            ],
+            "9mobile": [
+                { size: "250MB", validity: "7 days", price: 100 },
+                { size: "500MB", validity: "7 days", price: 200 },
+                { size: "1GB", validity: "7 days", price: 450 },
+                { size: "2GB", validity: "7 days", price: 800 },
+                { size: "5.2GB", validity: "1 month", price: 2300 },
+                { size: "11.4GB", validity: "1 month", price: 5000 }
+            ]
+        };
         
         async function checkExistingSession() {
             const savedEmail = sessionStorage.getItem('userEmail');
@@ -277,47 +312,23 @@
         }
         
         // ============ OVERLAY FUNCTIONS ============
-        
         function showWelcomeOverlay() {
             if (hasShownWelcomeOverlay) return;
             hasShownWelcomeOverlay = true;
-            
             const overlay = document.createElement('div');
             overlay.className = 'overlay';
-            overlay.innerHTML = `
-                <div class="overlay-card">
-                    <div style="font-size: 60px;">👋</div>
-                    <h2>Welcome to OnSlot!</h2>
-                    <p>You're ready to start buying cheap data!</p>
-                    <p style="background: rgba(245,158,11,0.1); padding: 10px; border-radius: 12px; margin: 15px 0;">
-                        💡 <strong>Quick Tip:</strong> Fund your wallet to start buying data bundles!
-                    </p>
-                    <button onclick="this.parentElement.parentElement.remove()">Get Started</button>
-                </div>
-            `;
+            overlay.innerHTML = `<div class="overlay-card"><div style="font-size: 60px;">👋</div><h2>Welcome to OnSlot!</h2><p>You're ready to start buying cheap data!</p><p style="background: rgba(245,158,11,0.1); padding: 10px; border-radius: 12px; margin: 15px 0;">💡 <strong>Quick Tip:</strong> Fund your wallet to start buying data bundles!</p><button onclick="this.parentElement.parentElement.remove()">Get Started</button></div>`;
             document.body.appendChild(overlay);
         }
         
-        // Loading overlay - appears briefly then disappears after 2 seconds
         function showLoadingOverlay(message = "Processing your request... Please wait a moment") {
             const existing = document.querySelector('.loading-overlay');
             if (existing) existing.remove();
-            
             const overlay = document.createElement('div');
             overlay.className = 'loading-overlay';
-            overlay.innerHTML = `
-                <div class="loading-card">
-                    <div class="loading-spinner"></div>
-                    <p>${message}</p>
-                    <p style="font-size: 0.8rem; margin-top: 10px;">⏰ Please wait a moment</p>
-                </div>
-            `;
+            overlay.innerHTML = `<div class="loading-card"><div class="loading-spinner"></div><p>${message}</p><p style="font-size: 0.8rem; margin-top: 10px;">⏰ Please wait a moment</p></div>`;
             document.body.appendChild(overlay);
-            
-            // Auto-hide loading overlay after 2 seconds
-            setTimeout(() => {
-                hideLoadingOverlay();
-            }, 2000);
+            setTimeout(() => { hideLoadingOverlay(); }, 2000);
         }
         
         function hideLoadingOverlay() {
@@ -328,72 +339,31 @@
         function showFundingSuccessOverlay(amount) {
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
-            overlay.innerHTML = `
-                <div class="success-card">
-                    <div class="check-icon"><i class="fas fa-check-circle"></i></div>
-                    <h2>Wallet Funded! 🎉</h2>
-                    <p>Your wallet has been successfully credited with <strong style="color: #10b981;">₦${amount}</strong>!</p>
-                    <p>You can now use your balance to buy data bundles.</p>
-                    <button onclick="this.parentElement.parentElement.remove()">Continue</button>
-                </div>
-            `;
+            overlay.innerHTML = `<div class="success-card"><div class="check-icon"><i class="fas fa-check-circle"></i></div><h2>Wallet Funded! 🎉</h2><p>Your wallet has been successfully credited with <strong style="color: #10b981;">₦${amount}</strong>!</p><p>You can now use your balance to buy data bundles.</p><button onclick="this.parentElement.parentElement.remove()">Continue</button></div>`;
             document.body.appendChild(overlay);
         }
         
         function showPurchaseSuccessOverlay(planSize, phoneNumber) {
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
-            overlay.innerHTML = `
-                <div class="success-card">
-                    <div class="check-icon"><i class="fas fa-check-circle"></i></div>
-                    <h2>Purchase Successful! 🎉</h2>
-                    <p>Your <strong style="color: #f59e0b;">${planSize}</strong> data has been sent to <strong style="color: #10b981;">${phoneNumber}</strong>!</p>
-                    <p>You should receive it shortly.</p>
-                    <button onclick="this.parentElement.parentElement.remove()">Continue</button>
-                </div>
-            `;
+            overlay.innerHTML = `<div class="success-card"><div class="check-icon"><i class="fas fa-check-circle"></i></div><h2>Purchase Successful! 🎉</h2><p>Your <strong style="color: #f59e0b;">${planSize}</strong> data has been sent to <strong style="color: #10b981;">${phoneNumber}</strong>!</p><p>You should receive it shortly.</p><button onclick="this.parentElement.parentElement.remove()">Continue</button></div>`;
             document.body.appendChild(overlay);
         }
         
         function showReferralSuccessOverlay() {
             const overlay = document.createElement('div');
             overlay.className = 'success-overlay';
-            overlay.innerHTML = `
-                <div class="success-card">
-                    <div class="check-icon"><i class="fas fa-check-circle"></i></div>
-                    <h2>Reward Credited! 🎉</h2>
-                    <p>Your 500MB referral reward has been added to your wallet!</p>
-                    <p>Thank you for inviting your friends!</p>
-                    <button onclick="this.parentElement.parentElement.remove()">Continue</button>
-                </div>
-            `;
+            overlay.innerHTML = `<div class="success-card"><div class="check-icon"><i class="fas fa-check-circle"></i></div><h2>Reward Credited! 🎉</h2><p>Your 500MB referral reward has been added to your wallet!</p><p>Thank you for inviting your friends!</p><button onclick="this.parentElement.parentElement.remove()">Continue</button></div>`;
             document.body.appendChild(overlay);
         }
         
         function showReferralRewardOverlay() {
             if (hasShownReferralOverlay) return;
             hasShownReferralOverlay = true;
-            
             const overlay = document.createElement('div');
             overlay.className = 'overlay';
             overlay.id = 'referralRewardOverlay';
-            overlay.innerHTML = `
-                <div class="overlay-card">
-                    <div style="font-size: 60px;">🎉</div>
-                    <h2>Congratulations!</h2>
-                    <p>You've reached 5 referrals!</p>
-                    <p>You've earned <strong style="color: #10b981;">500MB Data</strong>!</p>
-                    <div class="network-buttons">
-                        <div class="network-option" onclick="selectReferralNetwork('mtn')"><i class="fas fa-tower-cell"></i><span>MTN</span></div>
-                        <div class="network-option" onclick="selectReferralNetwork('airtel')"><i class="fas fa-broadcast-tower"></i><span>Airtel</span></div>
-                        <div class="network-option" onclick="selectReferralNetwork('glo')"><i class="fas fa-globe"></i><span>Glo</span></div>
-                        <div class="network-option" onclick="selectReferralNetwork('9mobile')"><i class="fas fa-mobile-alt"></i><span>9mobile</span></div>
-                    </div>
-                    <input type="tel" id="referralPhone" placeholder="Enter your phone number" maxlength="11">
-                    <button onclick="claimReferralReward()">Claim My 500MB Reward</button>
-                    <a class="skip-link" onclick="closeReferralRewardOverlay()">Maybe later</a>
-                </div>
-            `;
+            overlay.innerHTML = `<div class="overlay-card"><div style="font-size: 60px;">🎉</div><h2>Congratulations!</h2><p>You've reached 5 referrals!</p><p>You've earned <strong style="color: #10b981;">500MB Data</strong>!</p><div class="network-buttons"><div class="network-option" onclick="selectReferralNetwork('mtn')"><i class="fas fa-tower-cell"></i><span>MTN</span></div><div class="network-option" onclick="selectReferralNetwork('airtel')"><i class="fas fa-broadcast-tower"></i><span>Airtel</span></div><div class="network-option" onclick="selectReferralNetwork('glo')"><i class="fas fa-globe"></i><span>Glo</span></div><div class="network-option" onclick="selectReferralNetwork('9mobile')"><i class="fas fa-mobile-alt"></i><span>9mobile</span></div></div><input type="tel" id="referralPhone" placeholder="Enter your phone number" maxlength="11"><button onclick="claimReferralReward()">Claim My 500MB Reward</button><a class="skip-link" onclick="closeReferralRewardOverlay()">Maybe later</a></div>`;
             document.body.appendChild(overlay);
             window.selectedReferralNetwork = null;
         }
@@ -414,47 +384,23 @@
         
         async function claimReferralReward() {
             const phone = document.getElementById('referralPhone').value;
-            if (!window.selectedReferralNetwork) {
-                showToast("Please select your network", "error");
-                return;
-            }
-            if (!phone || !/^(0[7-9][0-1]{1}[0-9]{8})$/.test(phone)) {
-                showToast("Enter valid phone number", "error");
-                return;
-            }
-            
+            if (!window.selectedReferralNetwork) { showToast("Please select your network", "error"); return; }
+            if (!phone || !/^(0[7-9][0-1]{1}[0-9]{8})$/.test(phone)) { showToast("Enter valid phone number", "error"); return; }
             showLoadingOverlay("Submitting your referral reward request...");
-            
-            const result = await callAPI('/submit-referral-reward', 'POST', {
-                userEmail: currentUser.email,
-                userName: currentUser.name,
-                phone: phone,
-                network: window.selectedReferralNetwork,
-                amount: 400
-            });
-            
+            const result = await callAPI('/submit-referral-reward', 'POST', { userEmail: currentUser.email, userName: currentUser.name, phone: phone, network: window.selectedReferralNetwork, amount: 400 });
             if (result && result.success) {
                 closeReferralRewardOverlay();
                 const pending = await callAPI('/admin/pending-referrals');
                 const latest = pending?.find(r => r.user_email === currentUser.email && r.status === 'pending');
-                if (latest) {
-                    startReferralPolling(latest.id);
-                } else {
-                    hideLoadingOverlay();
-                    showToast("Referral reward request sent to admin!", "success");
-                }
+                if (latest) { startReferralPolling(latest.id); }
+                else { hideLoadingOverlay(); showToast("Referral reward request sent to admin!", "success"); }
                 await loadAdminData();
-            } else {
-                hideLoadingOverlay();
-                showToast("Failed to submit request", "error");
-            }
+            } else { hideLoadingOverlay(); showToast("Failed to submit request", "error"); }
         }
         
-        // ============ POLLING FUNCTIONS - Only shows success overlay when admin clicks success ============
-        
+        // ============ POLLING FUNCTIONS ============
         function startFundingPolling(pendingId, amount) {
             if (statusPollingInterval) clearInterval(statusPollingInterval);
-            
             statusPollingInterval = setInterval(async () => {
                 const result = await callAPI('/admin/pending-funding');
                 const item = result?.find(p => p.id == pendingId);
@@ -473,7 +419,6 @@
         
         function startPurchasePolling(pendingId, planSize, phoneNumber) {
             if (statusPollingInterval) clearInterval(statusPollingInterval);
-            
             statusPollingInterval = setInterval(async () => {
                 const result = await callAPI('/admin/pending-purchases');
                 const item = result?.find(p => p.id == pendingId);
@@ -492,7 +437,6 @@
         
         function startReferralPolling(pendingId) {
             if (statusPollingInterval) clearInterval(statusPollingInterval);
-            
             statusPollingInterval = setInterval(async () => {
                 const result = await callAPI('/admin/pending-referrals');
                 const item = result?.find(r => r.id == pendingId);
@@ -586,7 +530,6 @@
                     const adminFlag = document.getElementById("adminFlagBtn");
                     adminFlag.onclick = function() { const pwd = prompt("Enter admin code:"); if (pwd === "000") { document.getElementById("adminPanel").style.display = "block"; loadAdminData(); } else { showToast("Wrong admin code!", "error"); } };
                     
-                    await loadDataPlans();
                     await loadAdminData();
                     setInterval(loadAdminData, 5000);
                     
@@ -616,10 +559,7 @@
                     
                     document.getElementById("setCustomAmountBtn").onclick = () => {
                         const customAmount = parseInt(document.getElementById("customAmount").value);
-                        if (isNaN(customAmount) || customAmount < 400) {
-                            showToast("Please enter a valid amount of ₦400 or more", "error");
-                            return;
-                        }
+                        if (isNaN(customAmount) || customAmount < 400) { showToast("Please enter a valid amount of ₦400 or more", "error"); return; }
                         document.querySelectorAll(".amount-btn").forEach(b => b.classList.remove("selected"));
                         selectedAmount = customAmount;
                         document.getElementById("proceedPaymentBtn").classList.add("show");
@@ -627,10 +567,7 @@
                     };
                     
                     document.getElementById("proceedPaymentBtn").onclick = () => {
-                        if (!selectedAmount) {
-                            showToast("Please select an amount first", "error");
-                            return;
-                        }
+                        if (!selectedAmount) { showToast("Please select an amount first", "error"); return; }
                         document.getElementById("paymentSection").classList.add("show");
                     };
                 }
@@ -638,30 +575,31 @@
         }
         
         // ============ DATA PLANS ============
-        async function loadDataPlans() {
-            const result = await callAPI('/data-plans');
-            if (result) { dataPlans = result; }
-        }
-        
         function selectNetwork(network) {
             selectedNetwork = network;
             document.querySelectorAll(".network-btn").forEach(btn => btn.classList.remove("selected"));
             document.querySelector(`.network-btn.${network === '9mobile' ? 'nine' : network}`).classList.add("selected");
             
-            const filteredPlans = dataPlans.filter(p => p.network === network);
+            const plans = planData[network] || [];
             const container = document.getElementById("plansContainer");
-            if (filteredPlans.length === 0) { container.innerHTML = '<div class="empty-orders">No plans available for this network</div>'; return; }
-            container.innerHTML = filteredPlans.map(plan => `<div class="plan-card" data-plan-id="${plan.id}" data-plan-price="${plan.price}" data-plan-size="${plan.plan_size}" data-plan-name="${plan.plan_name}"><div class="plan-size">${plan.plan_size}</div><div class="plan-price">₦${plan.price}</div></div>`).join("");
+            if (plans.length === 0) { container.innerHTML = '<div class="empty-orders">No plans available for this network</div>'; return; }
+            
+            container.innerHTML = plans.map(plan => `
+                <div class="plan-card" data-plan-size="${plan.size}" data-plan-price="${plan.price}" data-plan-validity="${plan.validity}">
+                    <div class="plan-size">${plan.size}</div>
+                    <div class="plan-validity">📅 ${plan.validity}</div>
+                    <div class="plan-price">₦${plan.price}</div>
+                </div>
+            `).join("");
             
             document.querySelectorAll(".plan-card").forEach(card => {
                 card.onclick = () => {
                     document.querySelectorAll(".plan-card").forEach(c => c.classList.remove("selected"));
                     card.classList.add("selected");
                     selectedPlan = {
-                        id: card.dataset.planId,
                         size: card.dataset.planSize,
-                        name: card.dataset.planName,
-                        price: parseInt(card.dataset.planPrice)
+                        price: parseInt(card.dataset.planPrice),
+                        validity: card.dataset.planValidity
                     };
                     document.getElementById("buyDataBtn").disabled = false;
                 };
@@ -675,31 +613,19 @@
             document.querySelector(`.payment-method[data-method="${method}"]`).classList.add("selected");
         }
         
-        function copyAccountNumber() {
-            navigator.clipboard.writeText("9066051034");
-            showToast("Account number copied!", "success");
-        }
+        function copyAccountNumber() { navigator.clipboard.writeText("9066051034"); showToast("Account number copied!", "success"); }
         
         async function submitFundingConfirm() {
             const transactionRef = document.getElementById("fundingTransactionRef").value;
             if (!selectedAmount) { showToast("Please select an amount", "error"); return; }
             if (!transactionRef) { showToast("Enter transaction reference", "error"); return; }
-            
             showLoadingOverlay("Submitting your funding request...");
-            
-            const result = await callAPI('/submit-funding', 'POST', {
-                userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone,
-                amount: selectedAmount, transactionRef: transactionRef, paymentMethod: selectedFundingMethod
-            });
-            
+            const result = await callAPI('/submit-funding', 'POST', { userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone, amount: selectedAmount, transactionRef: transactionRef, paymentMethod: selectedFundingMethod });
             if (result && result.success) {
                 const pending = await callAPI('/admin/pending-funding');
                 const latest = pending?.find(p => p.user_email === currentUser.email && p.status === 'pending');
-                if (latest) {
-                    startFundingPolling(latest.id, selectedAmount);
-                } else {
-                    showToast("Funding request submitted! Admin will verify.", "success");
-                }
+                if (latest) { startFundingPolling(latest.id, selectedAmount); }
+                else { showToast("Funding request submitted! Admin will verify.", "success"); }
                 document.getElementById("accountDetails").style.display = "none";
                 document.getElementById("amountSection").classList.remove("show");
                 document.getElementById("paymentSection").classList.remove("show");
@@ -709,10 +635,7 @@
                 document.getElementById("customAmount").value = "";
                 selectedAmount = null;
                 await loadAdminData();
-            } else {
-                hideLoadingOverlay();
-                showToast("Failed to submit request", "error");
-            }
+            } else { hideLoadingOverlay(); showToast("Failed to submit request", "error"); }
         }
         
         // ============ PURCHASE ============
@@ -722,23 +645,13 @@
             const phone = document.getElementById("purchasePhone").value;
             if (!phone || !/^(0[7-9][0-1]{1}[0-9]{8})$/.test(phone)) { showToast("Enter valid phone number", "error"); return; }
             if ((currentUser.wallet_balance || 0) < selectedPlan.price) { showToast("Insufficient wallet balance. Please fund your wallet.", "error"); return; }
-            
             showLoadingOverlay(`Processing your purchase of ${selectedPlan.size}...`);
-            
-            const result = await callAPI('/submit-purchase', 'POST', {
-                userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone,
-                network: selectedNetwork, planId: selectedPlan.id, planName: selectedPlan.name,
-                planSize: selectedPlan.size, amount: selectedPlan.price, phoneNumber: phone
-            });
-            
+            const result = await callAPI('/submit-purchase', 'POST', { userEmail: currentUser.email, userName: currentUser.name, userPhone: currentUser.phone, network: selectedNetwork, planSize: selectedPlan.size, amount: selectedPlan.price, phoneNumber: phone });
             if (result && result.success) {
                 const pending = await callAPI('/admin/pending-purchases');
                 const latest = pending?.find(p => p.user_email === currentUser.email && p.status === 'pending');
-                if (latest) {
-                    startPurchasePolling(latest.id, selectedPlan.size, phone);
-                } else {
-                    showToast("Purchase request submitted! Admin will verify.", "success");
-                }
+                if (latest) { startPurchasePolling(latest.id, selectedPlan.size, phone); }
+                else { showToast("Purchase request submitted! Admin will verify.", "success"); }
                 currentUser.wallet_balance -= selectedPlan.price;
                 document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`;
                 await loadAdminData();
@@ -746,10 +659,7 @@
                 selectedPlan = null;
                 document.getElementById("buyDataBtn").disabled = true;
                 document.getElementById("purchasePhone").value = "";
-            } else { 
-                hideLoadingOverlay();
-                showToast(result?.error || "Purchase failed", "error"); 
-            }
+            } else { hideLoadingOverlay(); showToast(result?.error || "Purchase failed", "error"); }
         }
         
         // ============ ADMIN FUNCTIONS ============
@@ -796,45 +706,37 @@
             if (!container) return;
             const pending = pendingReferrals.filter(r => r.status === "pending");
             if (pending.length === 0) { container.innerHTML = '<div class="empty-orders">No pending referral rewards</div>'; return; }
-            container.innerHTML = pending.map(r => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${r.user_name}</strong></p><p>📧 ${r.user_email}</p><p>📱 Phone: ${r.phone} <button class="copy-btn" onclick="copyToClipboard('${r.phone}')">Copy</button></p><p>📡 Network: ${r.network ? r.network.toUpperCase() : "N/A"}</p><p>🎁 Referral Reward: 500MB</p><p>📝 5 referrals completed</p><p>⏰ ${r.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approveReferral(${r.id})"><i class="fas fa-check"></i> Credit Sent</button><button class="decline-btn" onclick="declineReferral(${r.id})"><i class="fas fa-times"></i> Decline</button></div></div>`).join("");
+            container.innerHTML = pending.map(r => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${r.user_name}</strong></p><p>📧 ${r.user_email}</p><p>📱 Phone: ${r.phone} <button class="copy-btn" onclick="copyToClipboard('${r.phone}')">Copy</button></p><p>📡 Network: ${r.network ? r.network.toUpperCase() : "N/A"}</p><p>🎁 Referral Reward: 500MB</p><p>⏰ ${r.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approveReferral(${r.id})"><i class="fas fa-check"></i> Credit Sent</button><button class="decline-btn" onclick="declineReferral(${r.id})"><i class="fas fa-times"></i> Decline</button></div></div>`).join("");
         }
         
         async function approveFunding(id) {
             const result = await callAPI(`/admin/approve-funding/${id}`, 'POST');
-            if (result && result.success) {
-                showToast("Funding approved! Wallet credited.", "success");
-                await loadAdminData();
-                const userData = await callAPI(`/user/${encodeURIComponent(currentUser.email)}`);
-                if (userData) { currentUser.wallet_balance = userData.wallet_balance; document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance}`; }
-            }
+            if (result && result.success) { showToast("Funding approved!", "success"); await loadAdminData(); }
         }
         
         async function declineFunding(id) {
             const result = await callAPI(`/admin/decline-funding/${id}`, 'POST');
-            if (result && result.success) { showToast("Funding request declined.", "error"); await loadAdminData(); }
+            if (result && result.success) { showToast("Funding declined.", "error"); await loadAdminData(); }
         }
         
         async function approvePurchase(id) {
             const result = await callAPI(`/admin/approve-purchase/${id}`, 'POST');
-            if (result && result.success) { showToast("Data marked as sent!", "success"); await loadAdminData(); }
+            if (result && result.success) { showToast("Purchase approved!", "success"); await loadAdminData(); }
         }
         
         async function declinePurchase(id) {
             const result = await callAPI(`/admin/decline-purchase/${id}`, 'POST');
-            if (result && result.success) { showToast("Purchase declined. Amount refunded.", "error"); await loadAdminData(); }
+            if (result && result.success) { showToast("Purchase declined.", "error"); await loadAdminData(); }
         }
         
         async function approveReferral(id) {
             const result = await callAPI(`/admin/approve-referral/${id}`, 'POST');
-            if (result && result.success) {
-                showToast("Referral reward credited to user's wallet!", "success");
-                await loadAdminData();
-            }
+            if (result && result.success) { showToast("Referral approved!", "success"); await loadAdminData(); }
         }
         
         async function declineReferral(id) {
             const result = await callAPI(`/admin/decline-referral/${id}`, 'POST');
-            if (result && result.success) { showToast("Referral reward declined.", "error"); await loadAdminData(); }
+            if (result && result.success) { showToast("Referral declined.", "error"); await loadAdminData(); }
         }
         
         function updateAdminBadge() {
@@ -864,9 +766,7 @@
         function showToast(msg, type) { const container = document.getElementById("toastContainer"); const toast = document.createElement("div"); toast.className = `toast ${type}`; toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
         function toggleAdminPanel() { const content = document.getElementById("adminContent"); const chevron = document.getElementById("adminChevron"); content.classList.toggle("show"); chevron.style.transform = content.classList.contains("show") ? "rotate(180deg)" : "rotate(0deg)"; }
         
-        document.addEventListener("DOMContentLoaded", () => { 
-            checkExistingSession(); 
-        });
+        document.addEventListener("DOMContentLoaded", () => { checkExistingSession(); });
     </script>
 </body>
 </html>
