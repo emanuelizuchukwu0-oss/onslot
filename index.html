@@ -85,52 +85,85 @@
         /* Hand Indicator Animation */
         .hand-indicator {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 4rem;
-            animation: pointAndMove 2s ease-in-out infinite;
+            font-size: 3rem;
+            animation: pointAndMove 1.5s ease-in-out infinite;
             z-index: 1000;
             pointer-events: none;
             text-shadow: 0 0 10px rgba(245,158,11,0.5);
         }
         @keyframes pointAndMove {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            50% { transform: translate(-50%, -60%) scale(1.2); opacity: 0.8; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            50% { transform: translateY(10px) scale(1.1); opacity: 0.9; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
         }
         
         .warning-banner {
-            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(245,158,11,0.2));
+            background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(245,158,11,0.15));
             border: 2px solid #f59e0b;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 20px;
+            padding: 25px 20px;
+            margin-bottom: 25px;
             text-align: center;
-            animation: pulse 1.5s infinite;
+            animation: borderPulse 2s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        @keyframes borderPulse {
+            0% { border-color: #f59e0b; box-shadow: 0 0 0 0 rgba(245,158,11,0.4); }
+            50% { border-color: #ffb347; box-shadow: 0 0 0 5px rgba(245,158,11,0.2); }
+            100% { border-color: #f59e0b; box-shadow: 0 0 0 0 rgba(245,158,11,0); }
         }
         .warning-banner i {
             font-size: 2rem;
             color: #f59e0b;
             margin-bottom: 10px;
-            display: block;
+            display: inline-block;
+            animation: bounce 1s infinite;
         }
-        .warning-banner h3 {
-            color: #f59e0b;
-            margin-bottom: 10px;
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
         .warning-banner p {
             color: #fff;
             font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
         }
         .warning-banner .highlight {
             background: #f59e0b;
             color: #0a0a0a;
-            padding: 5px 10px;
+            padding: 3px 10px;
             border-radius: 20px;
             display: inline-block;
-            margin: 5px 0;
+            margin: 3px 0;
             font-weight: bold;
+        }
+        .warning-banner .big-highlight {
+            background: #f59e0b;
+            color: #0a0a0a;
+            padding: 8px 15px;
+            border-radius: 30px;
+            display: inline-block;
+            margin: 10px 0;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .warning-banner .refresh-text {
+            background: rgba(16,185,129,0.2);
+            border: 1px solid #10b981;
+            color: #10b981;
+            padding: 8px 15px;
+            border-radius: 30px;
+            display: inline-block;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .warning-banner .arrow-down {
+            font-size: 1.8rem;
+            display: block;
+            margin-top: 10px;
+            animation: bounce 1s infinite;
         }
         
         .data-section { background: rgba(15,25,35,0.6); backdrop-filter: blur(12px); border-radius: 28px; padding: 24px; margin-bottom: 30px; border: 1px solid rgba(245,158,11,0.2); }
@@ -212,7 +245,6 @@
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
         
         .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1100; }
         .toast { background: rgba(15,25,35,0.95); backdrop-filter: blur(12px); padding: 12px 24px; border-radius: 50px; font-size: 0.875rem; display: flex; align-items: center; gap: 8px; animation: slideUp 0.3s ease; }
@@ -221,7 +253,7 @@
         .toast.info { border-left: 3px solid #f59e0b; }
         .footer { background: rgba(5,5,5,0.9); padding: 40px 24px 20px; text-align: center; }
         .footer p { color: #94a3b8; font-size: 0.8rem; }
-        @media (max-width: 768px) { .hero-title { font-size: 2rem; } .plans-grid { grid-template-columns: repeat(2, 1fr); } .pending-item { flex-direction: column; } .item-actions { width: 100%; justify-content: center; } }
+        @media (max-width: 768px) { .hero-title { font-size: 2rem; } .plans-grid { grid-template-columns: repeat(2, 1fr); } .pending-item { flex-direction: column; } .item-actions { width: 100%; justify-content: center; } .warning-banner p { font-size: 0.85rem; } }
     </style>
 </head>
 <body>
@@ -240,12 +272,18 @@
             <div class="fund-section" id="fundSection">
                 <div class="section-title"><i class="fas fa-wallet"></i> Fund Your Wallet</div>
                 
-                <!-- Warning Banner -->
+                <!-- Warning Banner with exact text -->
                 <div class="warning-banner" id="warningBanner">
-                    <i class="fas fa-hand-point-right"></i>
-                    <h3>⚠️ IMPORTANT! ⚠️</h3>
-                    <p>If amount is <span class="highlight">NOT selected</span> and you didn't tap on the <span class="highlight">"Confirm & Submit"</span> button, <strong>your wallet will NOT be funded!</strong></p>
-                    <p style="margin-top: 10px;">👇 <strong>Follow the steps below 👇</strong></p>
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>
+                        If amount is <span class="highlight">NOT selected</span> or your <span class="highlight">CUSTOM AMOUNT ISN'T TYPED IN</span> and you didn't tap on the <span class="big-highlight">"Confirm & Submit"</span> button, your wallet will <strong style="color: #ff6b6b;">NOT be funded!</strong>
+                    </p>
+                    <div class="refresh-text">
+                        <i class="fas fa-sync-alt"></i> PLSS REFRESH PAGE AFTER FUNDING <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <div class="arrow-down">
+                        👇 <strong>Follow the steps below</strong> 👇
+                    </div>
                 </div>
                 
                 <button class="fund-main-btn" id="fundMainBtn"><i class="fas fa-plus-circle"></i> Fund Wallet</button>
@@ -382,19 +420,24 @@
             fundSection.style.boxShadow = '0 0 0 4px #f59e0b, 0 0 0 8px rgba(245,158,11,0.3)';
             fundSection.style.transition = 'all 0.3s';
             
+            // Get position of the Fund Wallet button
+            const fundBtn = document.getElementById('fundMainBtn');
+            const rect = fundBtn.getBoundingClientRect();
+            
             // Create hand indicator pointing to Fund Wallet button
             handIndicator = document.createElement('div');
             handIndicator.className = 'hand-indicator';
-            handIndicator.innerHTML = '👇 <span style="font-size: 1rem; display: block;">Click here to start</span>';
+            handIndicator.innerHTML = '👇 Click here 👇';
             handIndicator.style.position = 'fixed';
-            handIndicator.style.top = (document.getElementById('fundMainBtn').getBoundingClientRect().top - 60) + 'px';
-            handIndicator.style.left = (document.getElementById('fundMainBtn').getBoundingClientRect().left + document.getElementById('fundMainBtn').offsetWidth / 2 - 40) + 'px';
+            handIndicator.style.top = (rect.top - 50) + 'px';
+            handIndicator.style.left = (rect.left + rect.width / 2 - 60) + 'px';
+            handIndicator.style.fontSize = '2rem';
             document.body.appendChild(handIndicator);
             
             // Show toast message
             showToast("👉 Click 'Fund Wallet' to add money! Remember to select amount and click 'Confirm & Submit'!", "info");
             
-            // Remove highlight after 5 seconds
+            // Remove highlight after 8 seconds
             setTimeout(() => {
                 if (fundSection) fundSection.style.boxShadow = '';
                 if (handIndicator) handIndicator.remove();
@@ -428,7 +471,7 @@
                             currentProcessingOverlay = null;
                         }
                         if (item.status === 'completed') {
-                            showSuccessOverlay(`✅ Funding Successful!\n\n₦${details.amountToAdd} has been added to your wallet!`, "Funding Approved!");
+                            showSuccessOverlay(`✅ Funding Successful!\n\n₦${details.amountToAdd} has been added to your wallet!\n\n🔄 Please refresh the page to see your updated balance.`, "Funding Approved!");
                             await refreshWalletBalance();
                         } else if (item.status === 'declined') {
                             showErrorOverlay(`❌ Funding Declined!\n\nYour funding request was declined by admin.`, "Funding Declined");
@@ -647,7 +690,7 @@
                     currentUser.wallet_balance = userData.wallet_balance;
                     localStorage.setItem('onslot_current_user', JSON.stringify(currentUser));
                     document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance} <i class="fas fa-sync-alt" style="font-size: 10px;"></i>`;
-                    showToast("Balance updated!", "success");
+                    showToast("Balance updated! Please refresh the page if balance doesn't show.", "success");
                 }
             }
         }
@@ -930,6 +973,7 @@
                 document.getElementById("amountSection").classList.add("show");
                 // Remove hand indicator when user clicks
                 if (handIndicator) handIndicator.remove();
+                showToast("📋 Step 2: Select an amount or enter custom amount, then click 'I Have Paid'", "info");
             };
             
             document.querySelectorAll(".amount-btn").forEach(btn => {
@@ -954,7 +998,7 @@
             document.getElementById("proceedPaymentBtn").onclick = () => {
                 if (!selectedAmount) { showToast("Select amount first", "error"); return; }
                 const youGet = selectedAmount - SERVICE_CHARGE;
-                showToast(`📝 You send ₦${selectedAmount}, ₦${SERVICE_CHARGE} fee deducted, ₦${youGet} added to wallet. Fill in your details and submit!`, "info");
+                showToast(`📝 Step 3: You send ₦${selectedAmount}, ₦${SERVICE_CHARGE} fee deducted, ₦${youGet} added to wallet. Fill in your details and submit!`, "info");
                 document.getElementById("paymentSection").classList.add("show");
             };
         }
@@ -1002,6 +1046,7 @@
         function copyAccountNumber() { 
             navigator.clipboard.writeText("9066051034"); 
             showToast("Account number copied! Make payment then come back to confirm.", "success");
+            showToast("📝 Step 1: Send money to this account, then come back to complete the process!", "info");
         }
         
         async function submitFundingConfirm() {
@@ -1046,13 +1091,13 @@
                     
                     if (latest) {
                         showProcessingOverlay(
-                            `💰 Funding Request\n\nAccount: ${accountName}\nYou send: ₦${selectedAmount}\nFee: ₦${SERVICE_CHARGE}\nYou get: ₦${amountToAdd}\n\nWaiting for admin approval...`,
+                            `💰 Funding Request\n\nAccount: ${accountName}\nYou send: ₦${selectedAmount}\nFee: ₦${SERVICE_CHARGE}\nYou get: ₦${amountToAdd}\n\nWaiting for admin approval...\n\n🔄 Please refresh the page after approval to see your balance!`,
                             'funding',
                             latest.id,
                             { amountToAdd: amountToAdd }
                         );
                     } else {
-                        showSuccessOverlay(`✅ Funding request submitted! ₦${amountToAdd} will be added upon admin approval.`, "Request Submitted!");
+                        showSuccessOverlay(`✅ Funding request submitted! ₦${amountToAdd} will be added upon admin approval.\n\n🔄 Please refresh the page after approval to see your balance.`, "Request Submitted!");
                     }
                     
                     document.getElementById("accountDetails").style.display = "none";
@@ -1149,7 +1194,7 @@
             toast.className = `toast ${type}`;
             toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${msg}`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => toast.remove(), 4000);
         }
         
         document.getElementById("adminContent").style.display = "block";
