@@ -405,10 +405,29 @@
             <div class="referral-section" id="referralSection"><div class="referral-header"><i class="fas fa-users"></i><h3>Refer & Earn 500MB</h3></div><div class="referral-code-box"><span class="referral-code" id="userReferralCode">Loading...</span><button class="copy-referral-btn" onclick="copyReferralCode()">Copy Code</button></div><div class="share-buttons"><button class="share-btn whatsapp" onclick="shareOnWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="share-btn facebook" onclick="shareOnFacebook()"><i class="fab fa-facebook"></i> Facebook</button><button class="share-btn twitter" onclick="shareOnTwitter()"><i class="fab fa-twitter"></i> Twitter</button><button class="share-btn telegram" onclick="shareOnTelegram()"><i class="fab fa-telegram"></i> Telegram</button></div><div class="referral-stats"><div class="referral-stat"><div class="label">Referrals Made</div><div class="value" id="referralCount">0</div></div><div class="referral-stat"><div class="label">Next Reward</div><div class="value" id="referralsNeeded">5 referrals = 500MB</div></div></div></div>
         </div>
 
-        <!-- Admin Panel -->
-        <div class="admin-panel" id="adminPanel"><div class="admin-header" onclick="toggleAdminPanel()"><h3><i class="fas fa-clock"></i> Admin Dashboard <span class="order-count-badge" id="totalPendingBadge">0</span></h3><i class="fas fa-chevron-down" id="adminChevron"></i></div><div class="admin-content" id="adminContent"><div class="admin-tabs"><div class="admin-tab active" data-tab="funding">💰 Wallet Funding (<span id="fundingTabCount">0</span>)</div><div class="admin-tab" data-tab="purchases">📱 Data Purchases (<span id="purchaseTabCount">0</span>)</div><div class="admin-tab" data-tab="referrals">🎁 Referral Rewards (<span id="referralTabCount">0</span>)</div></div><div id="fundingTab" class="tab-content active"><div class="pending-list" id="fundingList"><div class="empty-orders">No pending funding requests</div></div></div><div id="purchasesTab" class="tab-content"><div class="pending-list" id="purchasesList"><div class="empty-orders">No pending data purchases</div></div></div><div id="referralsTab" class="tab-content"><div class="pending-list" id="referralsList"><div class="empty-orders">No pending referral rewards</div></div></div></div></div>
+       <!-- Admin Panel -->
+<div class="admin-panel" id="adminPanel">
+    <div class="admin-header" onclick="toggleAdminPanel()">
+        <h3><i class="fas fa-clock"></i> Admin Dashboard <span class="order-count-badge" id="totalPendingBadge">0</span></h3>
+        <i class="fas fa-chevron-down" id="adminChevron"></i>
     </div>
-
+    <div class="admin-content" id="adminContent">
+        <div class="admin-tabs">
+            <div class="admin-tab active" data-tab="funding">💰 Wallet Funding (<span id="fundingTabCount">0</span>)</div>
+            <div class="admin-tab" data-tab="purchases">📱 Data Purchases (<span id="purchaseTabCount">0</span>)</div>
+            <div class="admin-tab" data-tab="referrals">🎁 Referral Rewards (<span id="referralTabCount">0</span>)</div>
+        </div>
+        <div id="fundingTab" class="tab-content active">
+            <div class="pending-list" id="fundingList"><div class="empty-orders">No pending funding requests</div></div>
+        </div>
+        <div id="purchasesTab" class="tab-content">
+            <div class="pending-list" id="purchasesList"><div class="empty-orders">No pending data purchases</div></div>
+        </div>
+        <div id="referralsTab" class="tab-content">
+            <div class="pending-list" id="referralsList"><div class="empty-orders">No pending referral rewards</div></div>
+        </div>
+    </div>
+</div>
     <div class="toast-container" id="toastContainer"></div>
     <footer class="footer"><p>&copy; 2024 OnSlot. All rights reserved. | Buy Cheap Data</p></footer>
 
@@ -703,13 +722,44 @@
             container.innerHTML = pending.map(f => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${f.user_name}</strong></p><p>📧 ${f.user_email}</p><p>💰 Amount: ₦${f.amount}</p><p>💳 ${f.payment_method}</p><p>📝 ${f.transaction_ref}</p><p>⏰ ${f.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approveFunding(${f.id})">Approve</button><button class="decline-btn" onclick="declineFunding(${f.id})">Decline</button></div></div>`).join("");
         }
         
-        function renderPurchasesList() {
-            const container = document.getElementById("purchasesList");
-            if (!container) return;
-            const pending = pendingPurchases.filter(p => p.status === "pending");
-            if (pending.length === 0) { container.innerHTML = '<div class="empty-orders">No pending purchases</div>'; return; }
-            container.innerHTML = pending.map(p => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${p.user_name}</strong></p><p>📧 ${p.user_email}</p><p>📱 ${p.phone_number}</p><p>🌐 ${p.network} - ${p.plan_size}</p><p>💰 ₦${p.total_amount}</p><p>⏰ ${p.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approvePurchase(${p.id})">Approve & Send Data</button><button class="decline-btn" onclick="declinePurchase(${p.id})">Decline</button></div></div>`).join("");
-        }
+function renderPurchasesList() {
+    const container = document.getElementById("purchasesList");
+    if (!container) {
+        console.log("purchasesList container not found!");
+        return;
+    }
+    console.log("Rendering purchases list. Pending purchases:", pendingPurchases);
+    const pending = pendingPurchases.filter(p => p.status === "pending");
+    if (pending.length === 0) { 
+        container.innerHTML = '<div class="empty-orders">No pending data purchases</div>'; 
+        return; 
+    }
+    container.innerHTML = pending.map(p => `
+        <div class="pending-item">
+            <div class="item-details">
+                <p><strong>👤 ${p.user_name}</strong></p>
+                <p>📧 ${p.user_email}</p>
+                <p>📱 Recipient: ${p.phone_number}</p>
+                <p>🌐 ${p.network ? p.network.toUpperCase() : "N/A"} - ${p.plan_size}</p>
+                <p>💰 Total: ₦${p.total_amount || 0}</p>
+                <p>⏰ ${p.timestamp}</p>
+            </div>
+            <div class="item-actions">
+                <button class="success-btn" onclick="approvePurchase(${p.id})"><i class="fas fa-check"></i> Approve & Send Data</button>
+                <button class="decline-btn" onclick="declinePurchase(${p.id})"><i class="fas fa-times"></i> Decline</button>
+            </div>
+        </div>
+    `).join("");
+}
+async function loadPendingPurchases() { 
+    const result = await callAPI('/admin/pending-purchases'); 
+    console.log("Pending purchases from API:", result);
+    if (result) { 
+        pendingPurchases = result; 
+        renderPurchasesList(); 
+        updateAdminBadge();
+    } 
+}
         
         function renderReferralsList() {
             const container = document.getElementById("referralsList");
@@ -736,58 +786,87 @@
             document.getElementById("referralTabCount").textContent = pendingReferralsCount;
         }
         
-        async function showDashboard() {
-            document.getElementById("authSection").style.display = "none";
-            document.getElementById("dashboardContent").style.display = "block";
-            document.getElementById("userInfo").style.display = "flex";
-            document.getElementById("userNameDisplay").innerHTML = `<i class="fas fa-user-circle"></i> ${currentUser.name}`;
-            document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance || 0} <i class="fas fa-sync-alt" style="font-size: 10px;"></i>`;
-            document.getElementById("userReferralCode").textContent = currentUser.referral_code || "N/A";
-            document.getElementById("referralCount").textContent = currentUser.referral_count || 0;
-            document.getElementById("referralsNeeded").innerHTML = `${5 - (currentUser.referral_count || 0)} referrals left = 500MB`;
+async function showDashboard() {
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("dashboardContent").style.display = "block";
+    document.getElementById("userInfo").style.display = "flex";
+    document.getElementById("userNameDisplay").innerHTML = `<i class="fas fa-user-circle"></i> ${currentUser.name}`;
+    document.getElementById("walletBalance").innerHTML = `₦${currentUser.wallet_balance || 0} <i class="fas fa-sync-alt" style="font-size: 10px;"></i>`;
+    document.getElementById("userReferralCode").textContent = currentUser.referral_code || "N/A";
+    document.getElementById("referralCount").textContent = currentUser.referral_count || 0;
+    document.getElementById("referralsNeeded").innerHTML = `${5 - (currentUser.referral_count || 0)} referrals left = 500MB`;
+    
+    if (currentUser.isAdmin || currentUser.email === "admin@onslot.com") {
+        document.getElementById("adminBtn").style.display = "flex";
+        await loadAdminData();
+        setInterval(loadAdminData, 5000);
+    } else {
+        document.getElementById("adminBtn").style.display = "none";
+        document.getElementById("helpBtn").style.display = "flex";
+    }
+    
+    // FIXED: Admin tab click handlers
+    document.querySelectorAll(".admin-tab").forEach(tab => {
+        tab.onclick = (e) => {
+            e.stopPropagation();
+            // Remove active class from all tabs
+            document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+            // Add active class to clicked tab
+            tab.classList.add("active");
+            // Hide all tab contents
+            document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+            // Show selected tab content
+            const tabId = tab.getAttribute("data-tab");
+            document.getElementById(`${tabId}Tab`).classList.add("active");
             
-            if (currentUser.isAdmin || currentUser.email === "admin@onslot.com") {
-                document.getElementById("adminBtn").style.display = "flex";
-                await loadAdminData();
-                setInterval(loadAdminData, 5000);
-            } else {
-                document.getElementById("adminBtn").style.display = "none";
-                document.getElementById("helpBtn").style.display = "flex";
+            // Refresh the list when tab is clicked
+            if (tabId === "funding") {
+                renderFundingList();
+            } else if (tabId === "purchases") {
+                renderPurchasesList();
+            } else if (tabId === "referrals") {
+                renderReferralsList();
             }
-            
-            document.getElementById("fundMainBtn").onclick = () => {
-                document.getElementById("accountDetails").style.display = "block";
-                document.getElementById("amountSection").classList.add("show");
-                if (handIndicator) handIndicator.remove();
-                showToast("Step 2: Select amount, then click 'I Have Paid'", "info");
-            };
-            
-            document.querySelectorAll(".amount-btn").forEach(btn => {
-                btn.onclick = () => {
-                    document.querySelectorAll(".amount-btn").forEach(b => b.classList.remove("selected"));
-                    btn.classList.add("selected");
-                    selectedAmount = parseInt(btn.dataset.amount);
-                    document.getElementById("proceedPaymentBtn").classList.add("show");
-                    showToast(`Amount ₦${selectedAmount} selected!`, "success");
-                };
-            });
-            
-            document.getElementById("setCustomAmountBtn").onclick = () => {
-                const customAmount = parseInt(document.getElementById("customAmount").value);
-                if (isNaN(customAmount) || customAmount < 400) { showToast("Enter amount ₦400+", "error"); return; }
-                document.querySelectorAll(".amount-btn").forEach(b => b.classList.remove("selected"));
-                selectedAmount = customAmount;
-                document.getElementById("proceedPaymentBtn").classList.add("show");
-                showToast(`Custom amount ₦${selectedAmount} selected!`, "success");
-            };
-            
-            document.getElementById("proceedPaymentBtn").onclick = () => {
-                if (!selectedAmount) { showToast("Select amount first", "error"); return; }
-                const youGet = selectedAmount - SERVICE_CHARGE;
-                showToast(`You send ₦${selectedAmount}, ₦${SERVICE_CHARGE} fee deducted, ₦${youGet} added`, "info");
-                document.getElementById("paymentSection").classList.add("show");
-            };
-        }
+        };
+    });
+    
+    // Make sure admin content is visible
+    document.getElementById("adminContent").style.display = "block";
+    
+    // Fund wallet button handlers
+    document.getElementById("fundMainBtn").onclick = () => {
+        document.getElementById("accountDetails").style.display = "block";
+        document.getElementById("amountSection").classList.add("show");
+        if (handIndicator) handIndicator.remove();
+        showToast("Step 2: Select amount, then click 'I Have Paid'", "info");
+    };
+    
+    document.querySelectorAll(".amount-btn").forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll(".amount-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            selectedAmount = parseInt(btn.dataset.amount);
+            document.getElementById("proceedPaymentBtn").classList.add("show");
+            showToast(`Amount ₦${selectedAmount} selected!`, "success");
+        };
+    });
+    
+    document.getElementById("setCustomAmountBtn").onclick = () => {
+        const customAmount = parseInt(document.getElementById("customAmount").value);
+        if (isNaN(customAmount) || customAmount < 400) { showToast("Enter amount ₦400+", "error"); return; }
+        document.querySelectorAll(".amount-btn").forEach(b => b.classList.remove("selected"));
+        selectedAmount = customAmount;
+        document.getElementById("proceedPaymentBtn").classList.add("show");
+        showToast(`Custom amount ₦${selectedAmount} selected!`, "success");
+    };
+    
+    document.getElementById("proceedPaymentBtn").onclick = () => {
+        if (!selectedAmount) { showToast("Select amount first", "error"); return; }
+        const youGet = selectedAmount - SERVICE_CHARGE;
+        showToast(`You send ₦${selectedAmount}, ₦${SERVICE_CHARGE} fee deducted, ₦${youGet} added`, "info");
+        document.getElementById("paymentSection").classList.add("show");
+    };
+}
         
         function selectNetwork(network) {
             selectedNetwork = network;
