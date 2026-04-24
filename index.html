@@ -412,7 +412,7 @@
     <div class="toast-container" id="toastContainer"></div>
     <footer class="footer"><p>&copy; 2024 OnSlot. All rights reserved. | Buy Cheap Data</p></footer>
 
-    <script>
+  <script>
         const API_URL = 'https://onslot-backend.onrender.com/api';
         const SERVICE_CHARGE = 50;
         const SITE_URL = 'https://onslot-1.onrender.com';
@@ -712,9 +712,21 @@
             updateAdminBadge();
         }
         
-        async function loadPendingFunding() { const result = await callAPI('/admin/pending-funding'); if (result) { pendingFunding = result; renderFundingList(); } }
-        async function loadPendingPurchases() { const result = await callAPI('/admin/pending-purchases'); if (result) { pendingPurchases = result; renderPurchasesList(); } }
-        async function loadPendingReferrals() { const result = await callAPI('/admin/pending-referrals'); if (result) { pendingReferrals = result; renderReferralsList(); } }
+        async function loadPendingFunding() { 
+            const result = await callAPI('/admin/pending-funding'); 
+            if (result) { pendingFunding = result; renderFundingList(); } 
+        }
+        
+        async function loadPendingPurchases() { 
+            const result = await callAPI('/admin/pending-purchases'); 
+            console.log("Pending purchases:", result);
+            if (result) { pendingPurchases = result; renderPurchasesList(); } 
+        }
+        
+        async function loadPendingReferrals() { 
+            const result = await callAPI('/admin/pending-referrals'); 
+            if (result) { pendingReferrals = result; renderReferralsList(); } 
+        }
         
         function renderFundingList() {
             const container = document.getElementById("fundingList");
@@ -729,7 +741,7 @@
             if (!container) return;
             const pending = pendingPurchases.filter(p => p.status === "pending");
             if (pending.length === 0) { container.innerHTML = '<div class="empty-orders">No pending purchases</div>'; return; }
-            container.innerHTML = pending.map(p => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${p.user_name}</strong></p><p>📧 ${p.user_email}</p><p>📱 ${p.phone_number}</p><p>🌐 ${p.network} - ${p.plan_size}</p><p>💰 ₦${p.total_amount}</p><p>⏰ ${p.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approvePurchase(${p.id})">Approve</button><button class="decline-btn" onclick="declinePurchase(${p.id})">Decline</button></div></div>`).join("");
+            container.innerHTML = pending.map(p => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${p.user_name}</strong></p><p>📧 ${p.user_email}</p><p>📱 ${p.phone_number}</p><p>🌐 ${p.network} - ${p.plan_size}</p><p>💰 ₦${p.total_amount}</p><p>⏰ ${p.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approvePurchase(${p.id})">Approve & Send Data</button><button class="decline-btn" onclick="declinePurchase(${p.id})">Decline & Refund</button></div></div>`).join("");
         }
         
         function renderReferralsList() {
@@ -737,13 +749,13 @@
             if (!container) return;
             const pending = pendingReferrals.filter(r => r.status === "pending");
             if (pending.length === 0) { container.innerHTML = '<div class="empty-orders">No pending referrals</div>'; return; }
-            container.innerHTML = pending.map(r => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${r.user_name}</strong></p><p>📧 ${r.user_email}</p><p>📱 ${r.phone}</p><p>📡 ${r.network}</p><p>🎁 500MB</p><p>⏰ ${r.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approveReferral(${r.id})">Approve</button><button class="decline-btn" onclick="declineReferral(${r.id})">Decline</button></div></div>`).join("");
+            container.innerHTML = pending.map(r => `<div class="pending-item"><div class="item-details"><p><strong>👤 ${r.user_name}</strong></p><p>📧 ${r.user_email}</p><p>📱 ${r.phone}</p><p>📡 ${r.network}</p><p>🎁 500MB</p><p>⏰ ${r.timestamp}</p></div><div class="item-actions"><button class="success-btn" onclick="approveReferral(${r.id})">Approve & Credit</button><button class="decline-btn" onclick="declineReferral(${r.id})">Decline</button></div></div>`).join("");
         }
         
         async function approveFunding(id) { const result = await callAPI(`/admin/approve-funding/${id}`, 'POST'); if (result?.success) { showToast("Funding approved!", "success"); await loadAdminData(); await refreshWalletBalance(); } }
         async function declineFunding(id) { const result = await callAPI(`/admin/decline-funding/${id}`, 'POST'); if (result?.success) { showToast("Funding declined.", "error"); await loadAdminData(); } }
-        async function approvePurchase(id) { const result = await callAPI(`/admin/approve-purchase/${id}`, 'POST'); if (result?.success) { showToast("Purchase approved!", "success"); await loadAdminData(); await refreshWalletBalance(); } }
-        async function declinePurchase(id) { const result = await callAPI(`/admin/decline-purchase/${id}`, 'POST'); if (result?.success) { showToast("Purchase declined.", "error"); await loadAdminData(); await refreshWalletBalance(); } }
+        async function approvePurchase(id) { const result = await callAPI(`/admin/approve-purchase/${id}`, 'POST'); if (result?.success) { showToast("Purchase approved! Data sent.", "success"); await loadAdminData(); await refreshWalletBalance(); } }
+        async function declinePurchase(id) { const result = await callAPI(`/admin/decline-purchase/${id}`, 'POST'); if (result?.success) { showToast("Purchase declined. Amount refunded.", "error"); await loadAdminData(); await refreshWalletBalance(); } }
         async function approveReferral(id) { const result = await callAPI(`/admin/approve-referral/${id}`, 'POST'); if (result?.success) { showToast("Referral approved!", "success"); await loadAdminData(); await refreshWalletBalance(); } }
         async function declineReferral(id) { const result = await callAPI(`/admin/decline-referral/${id}`, 'POST'); if (result?.success) { showToast("Referral declined.", "error"); await loadAdminData(); } }
         
@@ -775,6 +787,34 @@
                 document.getElementById("adminBtn").style.display = "none";
                 document.getElementById("helpBtn").style.display = "flex";
             }
+            
+            // FIXED: Admin tab click handlers
+            document.querySelectorAll(".admin-tab").forEach(tab => {
+                tab.onclick = (e) => {
+                    e.stopPropagation();
+                    // Remove active class from all tabs
+                    document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+                    // Add active class to clicked tab
+                    tab.classList.add("active");
+                    // Hide all tab contents
+                    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+                    // Show selected tab content
+                    const tabId = tab.getAttribute("data-tab");
+                    document.getElementById(`${tabId}Tab`).classList.add("active");
+                    
+                    // Refresh the list when tab is clicked
+                    if (tabId === "funding") {
+                        renderFundingList();
+                    } else if (tabId === "purchases") {
+                        renderPurchasesList();
+                    } else if (tabId === "referrals") {
+                        renderReferralsList();
+                    }
+                };
+            });
+            
+            // Make sure admin content is visible
+            document.getElementById("adminContent").style.display = "block";
             
             document.getElementById("fundMainBtn").onclick = () => {
                 document.getElementById("accountDetails").style.display = "block";
@@ -868,7 +908,6 @@
                 await loadAdminData();
             } else {
                 if (currentProcessingOverlay) currentProcessingOverlay.remove();
-                // Try local storage fallback
                 const users = JSON.parse(localStorage.getItem('onslot_users') || '[]');
                 const userIndex = users.findIndex(u => u.email === currentUser.email);
                 if (userIndex !== -1) {
@@ -938,5 +977,3 @@
         document.getElementById("adminContent").style.display = "block";
         document.addEventListener("DOMContentLoaded", () => { checkExistingSession(); });
     </script>
-</body>
-</html>
